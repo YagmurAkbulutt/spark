@@ -2,17 +2,25 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/api";
 
 // Kullanıcı giriş yapma işlemi
-export const loginUser = createAsyncThunk("auth/login", async (userData, { rejectWithValue }) => {
-  console.log("loginuser")
-  try {
-    console.log("try deneme")
-    const response = await api.post("/api/auth/login", userData);
-    return response.data;
-  } catch (error) {
-    console.log("error", error)
-    return rejectWithValue(error.response?.data || "Bir hata oluştu");
+export const loginUser = createAsyncThunk(
+  "auth/login",
+  async (userData, { rejectWithValue }) => {
+    console.log("loginuser");
+    try {
+      console.log("try deneme");
+      console.log("API URL:", api.defaults.baseURL + "/api/auth/login");
+      const response = await api.post("/api/auth/login", userData);
+      
+      return response.data;  
+      
+
+    } catch (error) {
+      console.log("error", error);
+      return rejectWithValue(error.response?.data || "Bir hata oluştu"); // Hata mesajını döndür
+    }
   }
-});
+);
+
 
 
 

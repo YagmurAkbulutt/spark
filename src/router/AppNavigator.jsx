@@ -33,7 +33,7 @@ const AppNavigator = () => {
     <MessageProvider>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-        
+        <Stack.Screen name="Main" component={BottomTabNavigator} />
           <Stack.Screen name={SPLASHSCREEN} component={SplashScreen} />
           <Stack.Screen name={ENTRYSCREEN} component={EntryScreen} />
           <Stack.Screen name={SIGNINSCREEN} component={SignInScreen} />
@@ -48,9 +48,9 @@ const AppNavigator = () => {
           <Stack.Screen 
             name={MESSAGELISTSCREEN} 
             component={MessageListScreen} 
-            options={{ tabBarStyle: { display: "flex" } }} // Tab bar'ı gizlemek için
+            options={{ tabBarStyle: { display: "flex" } }} 
           />
-          <Stack.Screen name="Main" component={BottomTabNavigator} />
+          
           
         </Stack.Navigator>
       </NavigationContainer>

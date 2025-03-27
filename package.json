@@ -27,6 +27,7 @@
     "react-native": "0.77.0",
     "react-native-camera-kit": "^14.2.0",
     "react-native-color-matrix-image-filters": "^7.0.2",
+    "react-native-config": "^1.5.5",
     "react-native-dotenv": "^3.4.11",
     "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "^2.23.1",

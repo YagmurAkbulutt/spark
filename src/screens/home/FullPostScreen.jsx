@@ -29,7 +29,6 @@ import { savePost, unsavePost } from '../../redux/slices/savedPostSlice';
 const FullPostScreen = ({ image, onClose }) => {
   const dispatch = useDispatch();
 
-  // Redux state'lerini al
   const likesCount = useSelector((state) => state.likes.likesCount);
   const commentsCount = useSelector((state) => state.comments.commentsCount);
   const savedPosts = useSelector((state) => state.savedPosts.savedPosts);
@@ -53,12 +52,12 @@ const FullPostScreen = ({ image, onClose }) => {
   const saveCount = savedCounts[image.id] || 0;
 
 
-  // Beğeni butonuna tıklandığında
+
   const handleLike = () => {
     if (likedBy.includes(userId)) {
-      dispatch(removeLike({ userId })); // Beğeniyi kaldır
+      dispatch(removeLike({ userId }));
     } else {
-      dispatch(addLike({ userId })); // Beğeni ekle
+      dispatch(addLike({ userId }));
     }
   };
 
@@ -69,15 +68,15 @@ const FullPostScreen = ({ image, onClose }) => {
   // Yorum gönderildiğinde
   const handleSubmitComment = (commentText) => {
     const newComment = {
-      id: Date.now(), // Benzersiz bir ID (örneğin, zaman damgası)
-      userId: 1, // Örnek kullanıcı ID'si (gerçek uygulamada dinamik olmalı)
+      id: Date.now(), 
+      userId: 1,
       comment: commentText,
     };
-    dispatch(addComment({ comment: newComment })); // Yorumu ekle
-    setCommentModal(false); // Modal'ı kapat
+    dispatch(addComment({ comment: newComment }));
+    setCommentModal(false); 
   };
 
-  // Kaydet butonuna tıklandığında
+  
   const handleSave = () => {
     setCollectionModal(true)
     if (savedPosts.includes(image.id)) {
@@ -94,7 +93,7 @@ const FullPostScreen = ({ image, onClose }) => {
   
     
 
-  // Scroll animasyonu ve diğer kodlar...
+ 
   useEffect(() => {
     const listener = scrollY.addListener(({ value }) => {
       if (value < -150) {

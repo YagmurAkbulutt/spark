@@ -129,7 +129,7 @@ const SignInScreen = ({ navigation }) => {
        {error && <Text style={styles.errorText}>{error}</Text>}
 
 {/* Giriş Yap Butonu */}
-<TouchableOpacity onPress={handleLogin} style={styles.loginButton}>
+<TouchableOpacity onPress={()=> navigation.navigate("Start")} style={styles.loginButton}>
   {isLoading ? (
     <ActivityIndicator color="#FFF" />
   ) : (
