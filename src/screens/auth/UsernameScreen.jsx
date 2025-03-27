@@ -104,6 +104,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: width * 0.05,
+    backgroundColor:"#FFFFFF"
   },
   backBtn: {
     position: 'absolute',
