@@ -1,54 +1,140 @@
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {height, width} from '../../utils/helpers';
 import SvgDot from '../../assets/dot';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchFollowers, fetchFollowing, followUser, unfollowUser } from '../../redux/slices/followSlice';
+import { useEffect, useState } from 'react';
+import { getSafeUserId } from '../../api/api';
 
-const ProfileInfo = ({user,toggleFollow, isFollowing}) => {
+const ProfileInfo = ({ user,  isFollowingUser }) => {
+  const dispatch = useDispatch();
+  const followers = useSelector((state) => state.follow.followers);
+  const following = useSelector((state) => state.follow.following);
+  const [isFollowing, setIsFollowing] = useState(false);
 
-  const formatFollow = num => {
-    if (num === 0) return '';
-    if (num >= 1_000_000) {
-      const formatted = (num / 1_000_000).toFixed(1).replace('.', ',');
-      return formatted.endsWith(',0')
-        ? formatted.slice(0, -2) + ' M'
-        : formatted + ' M';
-    } else if (num >= 1_000) {
-      const formatted = (num / 1_000).toFixed(1).replace('.', ',');
-      return formatted.endsWith(',0')
-        ? formatted.slice(0, -2) + ' B'
-        : formatted + ' B';
+  const [isLoading, setIsLoading] = useState(false);
+
+  const userId = getSafeUserId(user); // user.id || user._id şeklinde
+  
+// Kullanıcının takip edilip edilmediğini kontrol et
+useEffect(() => {
+  if (userId && following) {
+    const followingStatus = following.some(follow => follow.id === userId);
+    setIsFollowing(followingStatus);
+  }
+}, [userId, following]);
+
+// Takipçi ve takip edilen verilerini yükle
+useEffect(() => {
+  if (userId) {
+    dispatch(fetchFollowers(userId));
+    dispatch(fetchFollowing(userId));
+  }
+}, [userId, dispatch]);
+
+// Takipçi ve takip edilen sayılarını formatlama
+const formatFollow = (num) => {
+  if (num === undefined || num === null) return '0';
+  if (num >= 1_000_000) {
+    const formatted = (num / 1_000_000).toFixed(1).replace('.', ',');
+    return formatted.endsWith(',0') 
+      ? formatted.slice(0, -2) + ' M' 
+      : formatted + ' M';
+  } else if (num >= 1_000) {
+    const formatted = (num / 1_000).toFixed(1).replace('.', ',');
+    return formatted.endsWith(',0') 
+      ? formatted.slice(0, -2) + ' B' 
+      : formatted + ' B';
+  }
+  return num.toString();
+};
+
+
+useEffect(() => {
+  console.log("Kullanıcı Bilgileri:", {
+    profilePicture: user?.profilePicture,
+    fullName: user?.fullName,
+    username: user?.username,
+    bio: user?.bio,
+    followersCount: followers.length,
+    followingCount: following.length,
+    userId 
+  });
+}, [user, followers, following, userId]);
+
+const [localFollowing, setLocalFollowing] = useState(false);
+const [localFollowersCount, setLocalFollowersCount] = useState(user?.followersCount || 0);
+
+// Takip durumunu senkronize et
+useEffect(() => {
+  if (userId && following) {
+    const isFollowing = following.some(f => f.id === userId);
+    setLocalFollowing(isFollowing);
+  }
+}, [following, userId]);
+
+const handleFollowToggle = async () => {
+  if (!userId) {
+    console.error("Takip işlemi için geçerli kullanıcı ID'si yok");
+    return;
+  }
+
+  try {
+    if (localFollowing) {
+      await dispatch(unfollowUser(userId)).unwrap();
+      setLocalFollowersCount(prev => prev - 1);
     } else {
-      return num.toString();
+      await dispatch(followUser(userId)).unwrap();
+      setLocalFollowersCount(prev => prev + 1);
     }
-  };
+    setLocalFollowing(!localFollowing);
+    
+    dispatch(fetchFollowing(userId));
+  } catch (err) {
+    console.error("Takip işlemi hatası:", err);
+  }
+};
 
   return (
     <>
       <View style={styles.container}>
-        <View>
-          <Image style={styles.userImage} source={user.profilePhoto} />
+        {/* Profil Resmi */}
+        <View style={styles.profileImageContainer}>
+          <Image 
+            source={{ uri: user?.profilePicture }} 
+            style={styles.userImage}
+            onError={(e) => console.log("Resim yüklenemedi:", e.nativeEvent.error)}
+          />
         </View>
 
+        {/* Kullanıcı Bilgileri */}
         <View style={styles.userInfo}>
-          <Text style={styles.username}>{user.fullName}</Text>
+          <Text style={styles.username}>{user?.username || 'Fullname'}</Text>
+          
+          {/* Takipçi/Takip Bilgileri */}
           <View style={styles.follow}>
             <Text style={styles.followCountText}>
-              {formatFollow(user.followers)} takipçi
+              {formatFollow(followers.length)} takipçi
             </Text>
             <SvgDot />
             <Text style={styles.followCountText}>
-              {formatFollow(user.following)} takip
+              {
+              formatFollow(following.length)
+              } takip
             </Text>
           </View>
 
+          {/* Takip Butonu */}
           <View style={styles.followBtn}>
             <TouchableOpacity
               style={[
                 styles.followButton,
-                isFollowing ? styles.unfollowButton : styles.followButton,
+                isFollowing ? styles.unfollowButton : null,
               ]}
-              onPress={toggleFollow}>
+              onPress={handleFollowToggle}
+            >
               <Text style={isFollowing ? styles.unfollowText : styles.followText}>
-                {isFollowing ? 'Takibi Bırak' : 'Takip'}
+                {localFollowing ? "Takibi Bırak" : "Takip"}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.dotContainer} activeOpacity={0.7}>
@@ -58,9 +144,10 @@ const ProfileInfo = ({user,toggleFollow, isFollowing}) => {
         </View>
       </View>
 
+      {/* Kullanıcı Bio */}
       <Text style={styles.userBio}>
-        It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
-      </Text>
+{user?.bio || "Bio"}      
+</Text>
     </>
   );
 };
@@ -77,6 +164,7 @@ const styles = StyleSheet.create({
   userImage: {
     width: width * 0.26,
     height: width * 0.26,
+    borderRadius:76
   },
   userInfo: {
     marginLeft: 20,

@@ -19,45 +19,55 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const SignInScreen = ({ navigation }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [focusedInput, setFocusedInput] = useState(null);
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState(""); 
+
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
 
   const dispatch = useDispatch();
   const { isLoading, error } = useSelector((state) => state.auth); 
 
   const handleLogin = async () => {
     console.log("Login işlemi başlatıldı.");
-    if (!email || !password) {
-      alert("Lütfen e-posta ve şifrenizi girin.");
+    console.log("Identifier (email veya username):", identifier);
+    console.log("Password:", password);
+  
+    if (!identifier || !password) {
+      alert("Lütfen kullanıcı adı/e-posta ve şifrenizi girin.");
       return;
     }
   
+    let loginData = { identifier, password }; 
+  
+    console.log("Gönderilen loginData:", loginData);
+  
     try {
       console.log("Dispatch işlemi yapılıyor...");
-      const resultAction = dispatch(loginUser({ email, password }));
+      const resultAction = await dispatch(loginUser(loginData));  
       console.log("Dispatch tamamlandı.", resultAction);
   
       if (loginUser.fulfilled.match(resultAction)) {
         console.log("Login başarılı.");
         await AsyncStorage.setItem("isLoggedIn", "true");
-        navigation.navigate("Start");
+        navigation.navigate("Main"); 
+      } else {
+        console.log("Giriş işlemi başarısız:", resultAction);
       }
     } catch (error) {
       console.error("Giriş işlemi sırasında hata oluştu:", error);
     }
   };
-  
 
-  // useEffect(() => {
-  //   const checkLoginStatus = async () => {
-  //     const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
-  //     if (isLoggedIn === 'true') {
-  //       navigation.replace('Start');  
-  //     }
-  //   };
-  
-  //   checkLoginStatus();
-  // }, []); 
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const isLoggedIn = await AsyncStorage.getItem("isLoggedIn");
+      if (isLoggedIn === "true") {
+        navigation.replace("Main"); 
+      }
+    };
+    checkLoginStatus();
+  }, []);
+
   return (
     <TouchableWithoutFeedback onPress={dismissKeyboard}>
     <View style={styles.container}>
@@ -71,22 +81,25 @@ const SignInScreen = ({ navigation }) => {
         <View style={styles.inputContainer}>
           {/* Kullanıcı adı veya e-posta */}
           <View
-            style={[
-              styles.textInputContainer,
-              focusedInput === 'username' && styles.focusedInput,
-            ]}>
-            <TextInput
-              placeholder="Kullanıcı adı veya e-posta"
-              placeholderTextColor="#B9B9B9"
-              style={styles.textInput}
-              selectionColor='#D134AA'
-              onFocus={() => setFocusedInput('username')}
-              onBlur={() => setFocusedInput(null)}
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-            />
-          </View>
+  style={[
+    styles.textInputContainer,
+    focusedInput === 'username' && styles.focusedInput,
+  ]}>
+  <TextInput
+    placeholder="Kullanıcı adı veya e-posta"
+    placeholderTextColor="#B9B9B9"
+    style={styles.textInput}
+    selectionColor='#D134AA'
+    onFocus={() => setFocusedInput('username')}
+    onBlur={() => setFocusedInput(null)}
+    value={identifier}  // Sadece identifier'ı göster
+    onChangeText={(text) => {
+      setIdentifier(text);  // Kullanıcı girişini identifier olarak ayarla
+    }}
+    autoCapitalize="none"
+  />
+</View>
+
 
           {/* Şifre Girişi ve Göz İkonu */}
           <View
@@ -126,10 +139,15 @@ const SignInScreen = ({ navigation }) => {
 
         {/* Giriş Yap Butonu */}
        {/* Hata Mesajı */}
-       {error && <Text style={styles.errorText}>{error}</Text>}
+       {/* {error && typeof error === "object" ? (
+  <Text style={styles.errorText}>{error.message}</Text>
+) : (
+  <Text style={styles.errorText}>{error}</Text>
+)} */}
+
 
 {/* Giriş Yap Butonu */}
-<TouchableOpacity onPress={()=> navigation.navigate("Start")} style={styles.loginButton}>
+<TouchableOpacity onPress={handleLogin} style={styles.loginButton}>
   {isLoading ? (
     <ActivityIndicator color="#FFF" />
   ) : (

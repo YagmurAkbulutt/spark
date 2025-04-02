@@ -6,9 +6,11 @@ import SvgGoogleLogo from "../../assets/googleLogo.js"
 import SVGLogoS from "../../assets/logo-s.js"
 import { height } from '../../utils/helpers.js';
 import { useDispatch } from "react-redux";
-import { loginUser, registerUser } from "../../redux/slices/authSlice.js"; // loginUser ve registerUser aksiyonlarını içe aktar
-// import { GoogleSignin } from '@react-native-google-signin/google-signin'; // Google giriş için
+import { loginUser, loginWithGoogle, registerUser } from "../../redux/slices/authSlice.js"; // loginUser ve registerUser aksiyonlarını içe aktar
+import { GoogleSignin } from '@react-native-google-signin/google-signin'; // Google giriş için
 import AppleAuthentication from '@invertase/react-native-apple-authentication'; // Apple giriş için
+import jwtDecode from 'jwt-decode';
+
 
 const backgrounds = [
   require('../../assets/entry-1.png'), 
@@ -18,8 +20,15 @@ const backgrounds = [
 ];
 
 const EntryScreen = ({ navigation }) => {
-  const dispatch = useDispatch(); // Redux dispatch fonksiyonunu kullan
+  const dispatch = useDispatch(); 
   const [background, setBackground] = useState(null);
+
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: '20620325615-a6mf037sgfi3c5i9ngilp65ddvvjkv7v.apps.googleusercontent.com',
+      iosClientId: '20620325615-63b4hamdj3acvjt8c7fisuipvtaoickm.apps.googleusercontent.com',
+    });
+  }, []);
 
   useEffect(() => {
     const setNextBackground = async () => {
@@ -77,18 +86,127 @@ const EntryScreen = ({ navigation }) => {
   
   
 
-  // const handleGoogleLogin = async () => {
-  //   try {
-  //     await GoogleSignin.hasPlayServices();
-  //     const userInfo = await GoogleSignin.signIn();
-  //     const { user } = userInfo;
-  //     console.log("Google login successful, user info:", user);
+
   
-  //     dispatch(loginUser({ email: user.email, password: user.id }));
+  
+  
+  const handleGoogleLogin = async () => {
+    try {
+      console.log("Google login başlatılıyor...");
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();  // Google'dan gelen bilgileri alıyoruz
+      const { idToken } = await GoogleSignin.getTokens();  // Token bilgilerini alıyoruz
+  
+      // Google'dan gelen verileri kontrol et
+      const { email, givenName, familyName, photo } = userInfo.user; // Google'dan alınan bilgiler
+      const fullName = `${givenName} ${familyName}`;  // Google'dan gelen istenilen tam ad
+  
+      console.log("Google login başarılı! Kullanıcı bilgileri:", userInfo);
+      console.log("Google ID Token:", idToken);
+  
+      // Redux işlemi
+      const result = await dispatch(loginWithGoogle({ idToken }));
+      console.log("Redux işlemi tamamlandı, sonuç:", result);
+    
+      if (result.meta.requestStatus === 'fulfilled') {
+        console.log("Kullanıcı başarılı şekilde giriş yaptı:", result.payload);
+  
+        // Google login bilgilerini Username ekranına gönder
+        navigation.navigate('Username', {
+          userInfo,
+          idToken,
+          isGoogleLogin: true,
+          email,          // Google email
+          fullName,       // Google full name
+          profilePicture: photo, // Profil fotoğrafı
+        });
+      } else {
+        console.error("Giriş işlemi başarısız! Hata mesajı:", result.payload);
+      }
+    } catch (error) {
+      console.error("Google login sırasında hata oluştu:", error);
+  
+      // Eğer giriş yapılmamışsa getUserInfo ile kullanıcı bilgilerini almayı deneyebiliriz
+      const userData = await getUserInfo(); // Mevcut kullanıcıyı kontrol et
+      
+      if (userData) {
+        const { email, fullName, profilePicture } = userData;
+  
+        // Mevcut kullanıcı bilgileriyle Username ekranına yönlendirme yapıyoruz
+        navigation.navigate('Username', {
+          isGoogleLogin: false,
+          email,
+          fullName,
+          profilePicture
+        });
+      } else {
+        console.log("Kullanıcı bilgileri alınamadı.");
+      }
+    }
+  };
+  
+  // getUserInfo fonksiyonu
+  // const getUserInfo = async () => {
+  //   try {
+  //     const currentUser = await GoogleSignin.getCurrentUser();
+  //     if (currentUser) {
+  //       console.log("Mevcut kullanıcı bilgileri:", currentUser);
+  //       const { email, givenName, familyName, photo } = currentUser.user;
+  //       const fullName = `${givenName} ${familyName}`;
+  //       console.log("Kullanıcı adı:", fullName);
+  //       console.log("E-posta:", email);
+  //       console.log("Profil Fotoğrafı:", photo);
+        
+  //       return { email, fullName, profilePicture: photo };
+  //     } else {
+  //       console.log("Henüz giriş yapılmamış.");
+  //       return null; // Kullanıcı giriş yapmamışsa null döner
+  //     }
   //   } catch (error) {
-  //     console.error("Google login error:", error);
+  //     console.error("Kullanıcı bilgileri alınırken hata oluştu:", error);
+  //     return null; // Hata durumunda null döner
   //   }
   // };
+  
+  
+  
+  
+  
+
+  // const handleGoogleLogin = async () => {
+  //   try {
+  //     console.log("Google login başlatılıyor...");
+  //     await GoogleSignin.hasPlayServices();
+  //     const userInfo = await GoogleSignin.signIn();
+  //     const { idToken } = await GoogleSignin.getTokens();
+  
+  //     console.log("Google login başarılı! Kullanıcı bilgileri:", userInfo);
+  //     console.log("Google ID Token:", idToken);
+  
+  //     const result = await dispatch(loginWithGoogle({ idToken }));
+  //     console.log("Redux işlemi tamamlandı, sonuç:", result);
+  
+  //     if (result.meta.requestStatus === 'fulfilled') {
+  //       console.log("Kullanıcı başarılı şekilde giriş yaptı:", result.payload);
+        
+  //       // Google ile giriş yapıldıysa, fullName ve email alınıp aktarıyoruz
+  //       const fullName = `${userInfo.user.givenName} ${userInfo.user.familyName}`;
+  //       const email = userInfo.user.email;
+        
+  //       navigation.navigate('Username', {
+  //         fullName,  // Google'dan alınan fullName
+  //         email,     // Google'dan alınan email
+  //         idToken,
+  //       });
+  //     } else {
+  //       console.error("Giriş işlemi başarısız! Hata mesajı:", result.payload);
+  //     }
+  //   } catch (error) {
+  //     console.error("Google login sırasında hata oluştu:", error);
+  //   }
+  // };
+  
+  
   
 
   const handleEmailRegister = () => {
@@ -98,6 +216,16 @@ const EntryScreen = ({ navigation }) => {
   const handleEmailLogin = () => {
     navigation.navigate("SignIn"); // E-posta ile giriş ekranına yönlendir
   };
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const isLoggedIn = await AsyncStorage.getItem("isLoggedIn");
+      if (isLoggedIn === "true") {
+        navigation.replace("Main"); // Geri butonunu engellemek için replace kullanıyoruz.
+      }
+    };
+    checkLoginStatus();
+  }, []);
 
   return (
     <ImageBackground
@@ -110,7 +238,7 @@ const EntryScreen = ({ navigation }) => {
           <Text style={{ fontSize: 16, fontWeight: "500" }}>Apple ile giriş yap</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.containerBtn} 
-        // onPress={handleGoogleLogin}
+        onPress={handleGoogleLogin}
         >
           <SvgGoogleLogo style={{ width: 18, height: 26 }} />
           <Text style={{ fontSize: 16, fontWeight: "500" }}>Google ile giriş yap</Text>
@@ -128,7 +256,7 @@ const EntryScreen = ({ navigation }) => {
         <View style={{ justifyContent: "center", alignItems: "center", height: 24, marginTop: 14 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Text style={{ fontWeight: "400", color: "white", fontSize: 14 }}>
-              Style Up hesabım var.{" "}
+              Sparkles hesabım var.{" "}
             </Text>
             <TouchableOpacity onPress={handleEmailLogin}>
               <Text style={{ fontWeight: "500", color: "white", fontSize: 14 }}>Giriş yap.</Text>

@@ -3,12 +3,31 @@ import SvgSearchPeople from '../../assets/searchpeople';
 import { useEffect, useState } from 'react';
 import { messageList, users, width } from '../../utils/helpers';
 import SearchPeople from './SearchPeople';
+import { useDispatch, useSelector } from 'react-redux';
+import { searchProfile } from '../../redux/slices/searchProfileSlice';
 
 
 const SearchInput = () => {
     const [searchText, setSearchText] = useState('');
+    const [isFocused, setIsFocused] = useState(false);
+    const dispatch = useDispatch();
     const [filteredUsers, setFilteredUsers] = useState([]);
-    const [isFocused, setIsFocused] = useState(false); 
+    const [selectedUser, setSelectedUser] = useState(null);
+
+    // Get data from Redux
+    const { users, status, error } = useSelector((state) => state.searchProfile);
+
+    // Single API call effect
+    useEffect(() => {
+        console.log(`🔍 Arama Terimi: "${searchText}"`);
+    
+        if (searchText.trim() === '') {
+            console.log('🚫 Boş sorgu, API çağrısı yapılmayacak.');
+        } else {
+            console.log(`📡 API çağrısı yapılıyor: /api/users/search?q=${searchText}`);
+            dispatch(searchProfile(searchText));
+        }
+    }, [searchText, dispatch]);
 
     useEffect(() => {
         if (searchText.trim() === '') {
@@ -23,29 +42,35 @@ const SearchInput = () => {
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.scontainer}>
-            {/* Arama Kutusu */}
-            <View style={styles.searchContainer}>
-                <SvgSearchPeople style={styles.searchIcon} />
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="Kişi, kıyafet kodu veya koleksiyon ara"
-                    placeholderTextColor="#BBBBBB"
-                    onChangeText={setSearchText}
-                    value={searchText}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                />
-            </View>
+            <View style={styles.scontainer}>
+                {/* Arama Kutusu */}
+                <View style={styles.searchContainer}>
+                    <SvgSearchPeople style={styles.searchIcon} />
+                    <TextInput
+                        style={styles.searchInput}
+                        placeholder="Kişi, kıyafet kodu veya koleksiyon ara"
+                        placeholderTextColor="#BBBBBB"
+                        onChangeText={(text) => {
+                            setSearchText(text);
+                            if (text.trim() === '') {
+                                setSelectedUser(null);
+                            }
+                        }}
+                        value={searchText}
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        selectionColor="#D134AA"
+                    />
+                </View>
 
-            {/* Kullanıcı Listesi */}
-            {(isFocused || filteredUsers.length > 0) && (
+                {/* Kullanıcı Listesi */}
+                 {(isFocused || filteredUsers.length > 0) && (
                 <SearchPeople isFocused={isFocused} filteredUsers={filteredUsers} />
             )}
-        </View>
-    </TouchableWithoutFeedback>
+            </View>
+        </TouchableWithoutFeedback>
     );
-}
+};
 
 export default SearchInput;
 

@@ -10,6 +10,8 @@ import messageReducer from "./slices/messagesSlice"
 import photoReducer from "./slices/photoSlice"
 import categorisReducer from "./slices/categoriesSlice"
 import postReducer from "./slices/postSlice"
+import searchReducer from "./slices/searchProfileSlice"
+import followReducer from "./slices/followSlice"
 
 const store = configureStore({
   reducer: {
@@ -24,6 +26,8 @@ const store = configureStore({
     messages: messageReducer,
     photo: photoReducer,
     category: categorisReducer,
+    searchProfile: searchReducer,
+    follow: followReducer
     
   },
 });

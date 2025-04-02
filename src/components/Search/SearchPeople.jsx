@@ -16,43 +16,58 @@ import {useEffect, useState} from 'react';
 import { useNavigation } from '@react-navigation/native';
 import SearchProfile from './SearchProfile';
 
-const SearchPeople = ({filteredUsers}) => {
+const SearchPeople = ({ filteredUsers }) => {
   const [savedUsers, setSavedUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null); 
   const [modalVisible, setModalVisible] = useState(false);
-  const { height: screenHeight } = Dimensions.get('window');  
-  const tabBarHeight = 80; 
+  const { height: screenHeight } = Dimensions.get('window');
+  const tabBarHeight = 80;
   const modalHeight = screenHeight - tabBarHeight;
 
+  // AsyncStorage'den kayıtlı kullanıcıları yükle
   useEffect(() => {
     const loadSavedUsers = async () => {
-      const storedUsers = await AsyncStorage.getItem('savedUsers');
-      if (storedUsers) {
-        setSavedUsers(JSON.parse(storedUsers));
+      try {
+        const storedUsers = await AsyncStorage.getItem('savedUsers');
+        if (storedUsers) {
+          setSavedUsers(JSON.parse(storedUsers));
+        }
+      } catch (error) {
+        console.error('Kullanıcılar yüklenirken hata:', error);
       }
     };
     loadSavedUsers();
   }, []);
 
-  const handleSelectUser = async user => {
-  
-    if (!savedUsers.some(u => u.id === user.id)) {
-      const updatedUsers = [...savedUsers, user];
+  // Kullanıcı seçildiğinde çalışacak fonksiyon
+  const handleSelectUser = async (user) => {
+    try {
+      // Eğer kullanıcı kayıtlı değilse ekle
+      if (!savedUsers.some(u => u.id === user.id)) {
+        const updatedUsers = [...savedUsers, user];
+        setSavedUsers(updatedUsers);
+        await AsyncStorage.setItem('savedUsers', JSON.stringify(updatedUsers));
+      }
+      
+      setSelectedUser(user);
+      setModalVisible(true);
+    } catch (error) {
+      console.error('Kullanıcı eklenirken hata:', error);
+    }
+  };
+
+  // Kullanıcıyı listeden kaldır
+  const handleRemoveUser = async (userId) => {
+    try {
+      const updatedUsers = savedUsers.filter(user => user.id !== userId);
       setSavedUsers(updatedUsers);
       await AsyncStorage.setItem('savedUsers', JSON.stringify(updatedUsers));
+    } catch (error) {
+      console.error('Kullanıcı silinirken hata:', error);
     }
-  
-    setSelectedUser(user); 
-    setModalVisible(true);
-  };
-  
-
-  const handleRemoveUser = async userId => {
-    const updatedUsers = savedUsers.filter(user => user.id !== userId);
-    setSavedUsers(updatedUsers);
-    await AsyncStorage.setItem('savedUsers', JSON.stringify(updatedUsers));
   };
 
+  // Kayıtlı ve filtrelenmiş kullanıcıları birleştir
   const mergedUsers = [
     ...savedUsers,
     ...filteredUsers.filter(u => !savedUsers.some(su => su.id === u.id)),
@@ -63,15 +78,20 @@ const SearchPeople = ({filteredUsers}) => {
       <FlatList
         data={mergedUsers}
         keyExtractor={item => item.id.toString()}
-        contentContainerStyle={{width: '100%'}}
-        renderItem={({item}) => (
+        contentContainerStyle={{ width: '100%' }}
+        renderItem={({ item }) => (
           <View style={styles.userItemContainer}>
             <TouchableOpacity
               style={styles.userItem}
               activeOpacity={0.7}
-              onPress={() => handleSelectUser(item)}>
+              onPress={() => handleSelectUser(item)}
+            >
               <View style={styles.imageContainer}>
-                <Image source={item.profilePhoto} style={styles.userImage} />
+                <Image 
+                  source={{ uri: item.profilePicture }} 
+                  style={styles.userImage} 
+                  onError={() => console.log('Resim yüklenemedi:', item.profilePicture)}
+                />
                 <SvgFollow style={styles.icon} />
               </View>
               <View style={styles.userInfo}>
@@ -80,28 +100,50 @@ const SearchPeople = ({filteredUsers}) => {
               </View>
             </TouchableOpacity>
             <View style={styles.closeIconContainer}>
-              {savedUsers.some(u => u.id === item.id) ? (
-                <TouchableOpacity onPress={() => handleRemoveUser(item.id)} activeOpacity={0.7}>
+              {savedUsers.some(u => u.id === item.id) && (
+                <TouchableOpacity 
+                  onPress={() => handleRemoveUser(item.id)} 
+                  activeOpacity={0.7}
+                >
                   <SvgClose width={16} height={16} />
                 </TouchableOpacity>
-              ) : null}
+              )}
             </View>
           </View>
         )}
       />
 
-<Modal
+      {/* Seçilen kullanıcı için modal */}
+      {/* <Modal
+        animationType="slide"
+        transparent={false}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={[styles.modalContainer, { height: modalHeight }]}>
+          {selectedUser && (
+            <SearchProfile 
+              user={selectedUser} 
+              closeModal={() => setModalVisible(false)} 
+            />
+          )}
+        </View>
+      </Modal> */}
+      <Modal
         animationType="none"
         transparent={true}
         visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)} style={{height:modalHeight}}>
+        onRequestClose={() => setModalVisible(false)} 
+        style={{height:"100%"}}
+        >
          <View style={styles.modalContainer}>
-    <View style={[styles.modalContent, { height: modalHeight }]}>
+    <View style={[styles.modalContent,
+     { height:"100%"}]
+  }>
       <SearchProfile user={selectedUser} closeModal={() => setModalVisible(false)} />
     </View>
   </View>
       </Modal>
-
     </View>
   );
 };

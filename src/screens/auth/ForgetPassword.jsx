@@ -6,33 +6,143 @@ import {
   View,
   TouchableWithoutFeedback,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import {useEffect, useState} from 'react';
 import SvgLock from '../../assets/lock';
 import SvgClose from '../../assets/close';
 import { dismissKeyboard, height, width } from '../../utils/helpers';
 import { useDispatch, useSelector } from 'react-redux';
-import { forgotPassword } from '../../redux/slices/authSlice';
+import { forgotPassword, resetForgotPasswordState } from '../../redux/slices/authSlice';
 
 
 const ForgetPassword = ({ navigation }) => {
   const dispatch = useDispatch();
-  const { isLoading, error, message } = useSelector((state) => state.auth); // Redux durumları
+  const { forgotPasswordLoading, forgotPasswordError, forgotPasswordSuccess } = useSelector((state) => state.auth);
   const [email, setEmail] = useState("");
   const [focusedInput, setFocusedInput] = useState(null);
-  const [isModalVisible, setModalVisible] = useState(false); 
-  const handleForgotPassword = () => {
-    if (email.trim()) {
-      dispatch(forgotPassword(email)); // Redux'a e-posta gönderimi
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const { isLoading, error, message } = useSelector((state) => state.auth); 
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
+
+  const handleSubmit = async () => {
+    if (!email.trim()) {
+      setModalMessage("Lütfen geçerli bir e-posta adresi giriniz");
+      setModalVisible(true);
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setModalMessage("Lütfen geçerli bir e-posta formatı giriniz");
+      setModalVisible(true);
+      return;
+    }
+
+    try {
+      const resultAction = await dispatch(forgotPassword(email));
+      if (forgotPassword.fulfilled.match(resultAction)) {
+        setModalMessage(resultAction.payload.message || "Şifre sıfırlama bağlantısı e-posta adresinize gönderildi!");
+        setModalVisible(true);
+      }
+    } catch (error) {
+      console.error("Şifre sıfırlama hatası:", error);
     }
   };
+
+  // Modal'ı kapatma fonksiyonu
+  const closeModal = () => {
+    setModalVisible(false);
+    if (forgotPasswordSuccess) {
+      navigation.navigate("SignIn");
+    }
+    dispatch(resetForgotPasswordState());
+  };
+
+  useEffect(() => {
+    if (forgotPasswordError || forgotPasswordSuccess) {
+      setModalMessage(forgotPasswordError || forgotPasswordSuccess);
+      setModalVisible(true);
+    }
+  }, [forgotPasswordError, forgotPasswordSuccess]);
+
   useEffect(() => {
     if (message) {
       setModalVisible(true); 
     }
   }, [message]);
   return (
-    <TouchableWithoutFeedback onPress={dismissKeyboard}>
+  //   <TouchableWithoutFeedback onPress={dismissKeyboard}>
+  //     <View style={styles.container}>
+  //       <View style={styles.closeBtn}>
+  //         <TouchableOpacity onPress={() => navigation.navigate("SignIn")}>
+  //           <SvgClose />
+  //         </TouchableOpacity>
+  //       </View>
+
+  //       <View style={{ gap: 13, alignItems: "center", justifyContent: "center" }}>
+  //         {/* Logo */}
+  //         <View style={styles.logoContainer}>
+  //           <SvgLock width={width * 0.2} height={width * 0.2} />
+  //         </View>
+
+  //         <View style={styles.textContainer}>
+  //           <Text style={styles.textOne}>Girişte sorun mu yaşıyorsun?</Text>
+  //           <Text style={styles.textTwo}>
+  //             Kullanıcı adını veya e-posta adresini gir ve sana yeniden hesabına
+  //             girebilmen için bir bağlantı gönderelim
+  //           </Text>
+  //         </View>
+
+  //         {/* Giriş Alanları */}
+  //         <View style={styles.inputContainer}>
+  //           {/* Kullanıcı adı veya e-posta */}
+  //           <View
+  //             style={[
+  //               styles.textInputContainer,
+  //               focusedInput === "username" && styles.focusedInput,
+  //             ]}
+  //           >
+  //             <TextInput
+  //               placeholder="Kullanıcı adı veya e-posta"
+  //               placeholderTextColor="#B9B9B9"
+  //               style={styles.textInput}
+  //               selectionColor='#D134AA'
+  //               value={email}
+  // onChangeText={(text) => setEmail(text)} 
+  //               onFocus={() => setFocusedInput("username")}
+  //               onBlur={() => setFocusedInput(null)}
+  //               autoCapitalize='none'
+  //             />
+  //           </View>
+
+  //           {/* Gönder Butonu */}
+  //           <TouchableOpacity style={styles.loginButton} onPress={handleSubmit}>
+  //             <Text style={styles.loginButtonText}>Gönder</Text>
+  //           </TouchableOpacity>
+
+  //           <Modal
+  //         visible={isModalVisible} 
+  //         transparent={true} 
+  //         animationType="fade" 
+  //         onRequestClose={() => setModalVisible(false)} 
+  //       >
+  //         <View style={styles.modalOverlay}>
+  //           <View style={styles.modalContent}>
+  //             <Text style={styles.modalText}>{message}</Text>
+  //             <TouchableOpacity onPress={() => setModalVisible(false)}>
+  //               <Text style={styles.closeModalText}>Kapat</Text>
+  //             </TouchableOpacity>
+  //           </View>
+  //         </View>
+  //       </Modal>
+  //         </View>
+  //       </View>
+  //     </View>
+  //   </TouchableWithoutFeedback>
+  <TouchableWithoutFeedback onPress={dismissKeyboard}>
       <View style={styles.container}>
         <View style={styles.closeBtn}>
           <TouchableOpacity onPress={() => navigation.navigate("SignIn")}>
@@ -43,58 +153,71 @@ const ForgetPassword = ({ navigation }) => {
         <View style={{ gap: 13, alignItems: "center", justifyContent: "center" }}>
           {/* Logo */}
           <View style={styles.logoContainer}>
-            <SvgLock width={width * 0.2} height={width * 0.2} />
+            <SvgLock width={100} height={100} />
           </View>
 
           <View style={styles.textContainer}>
             <Text style={styles.textOne}>Girişte sorun mu yaşıyorsun?</Text>
             <Text style={styles.textTwo}>
-              Kullanıcı adını veya e-posta adresini gir ve sana yeniden hesabına
-              girebilmen için bir bağlantı gönderelim
+              E-posta adresini gir ve sana yeniden hesabına girebilmen için bir bağlantı gönderelim
             </Text>
           </View>
 
           {/* Giriş Alanları */}
           <View style={styles.inputContainer}>
-            {/* Kullanıcı adı veya e-posta */}
+            {/* E-posta girişi */}
             <View
               style={[
                 styles.textInputContainer,
-                focusedInput === "username" && styles.focusedInput,
+                focusedInput === "email" && styles.focusedInput,
               ]}
             >
               <TextInput
-                placeholder="Kullanıcı adı veya e-posta"
+                placeholder="E-posta adresiniz"
                 placeholderTextColor="#B9B9B9"
                 style={styles.textInput}
-                selectionColor='#D134AA'
+                selectionColor="#D134AA"
                 value={email}
                 onChangeText={setEmail}
-                onFocus={() => setFocusedInput("username")}
+                onFocus={() => setFocusedInput("email")}
                 onBlur={() => setFocusedInput(null)}
+                keyboardType="email-address"
+                autoCapitalize="none"
               />
             </View>
 
             {/* Gönder Butonu */}
-            <TouchableOpacity style={styles.loginButton} onPress={handleForgotPassword}>
-              <Text style={styles.loginButtonText}>Gönder</Text>
+            <TouchableOpacity 
+              style={styles.loginButton} 
+              onPress={handleSubmit}
+              disabled={forgotPasswordLoading}
+            >
+              {forgotPasswordLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.loginButtonText}>Gönder</Text>
+              )}
             </TouchableOpacity>
 
+            {/* Bilgilendirme Modalı */}
             <Modal
-          visible={isModalVisible} 
-          transparent={true} 
-          animationType="fade" 
-          onRequestClose={() => setModalVisible(false)} 
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalText}>{message}</Text>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Text style={styles.closeModalText}>Kapat</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
+              visible={isModalVisible}
+              transparent={true}
+              animationType="fade"
+              onRequestClose={closeModal}
+            >
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalText}>{modalMessage}</Text>
+                  <TouchableOpacity 
+                    style={styles.modalButton}
+                    onPress={closeModal}
+                  >
+                    <Text style={styles.modalButtonText}>Tamam</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
           </View>
         </View>
       </View>

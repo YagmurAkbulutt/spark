@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   View,
   TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import SvgLogoS from '../../assets/logo-s';
 import SvgEyeOff from '../../assets/eyeoff';
@@ -12,7 +13,7 @@ import {useState} from 'react';
 import {dismissKeyboard, height, width} from '../../utils/helpers';
 import SvgBack from '../../assets/back';
 import { useDispatch, useSelector } from 'react-redux';
-import { registerUser } from '../../redux/slices/authSlice';
+import { registerUser, registerUserStep1, setUserProfile } from '../../redux/slices/authSlice';
 
 const SignUpScreen = ({ navigation }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -30,14 +31,34 @@ const SignUpScreen = ({ navigation }) => {
   };
 
   const handleSignUp = () => {
-    if (fullName && email && password) {
+    console.log("handleSignUp çalıştı");
+  
+    if (fullName.trim() && email.trim() && password.trim()) {
       const userData = { fullName, email, password };
-      dispatch(registerUser(userData));
+      console.log("Gönderilecek userData:", userData);
+  
+      dispatch(registerUserStep1(userData))
+        .then((result) => {
+          console.log("registerUserStep1 sonucu:", result);
+  
+          if (result.meta.requestStatus === "fulfilled") {
+            dispatch(setUserProfile(userData)); // Redux state’e kaydet
+            console.log("Kullanıcı bilgileri Redux'a kaydedildi");
+            navigation.navigate("Username"); // Username ekranına git
+          } else {
+            console.log("registerUserStep1 başarısız:", result);
+          }
+        })
+        .catch((error) => {
+          console.log("registerUserStep1 hata verdi:", error);
+        });
     } else {
-      // Hata mesajı ekleyebilirsin
-      console.log('Lütfen tüm alanları doldurun.');
+      console.log("Lütfen tüm alanları doldurun.");
     }
   };
+  
+  
+  
 
   return (
     <TouchableWithoutFeedback onPress={dismissKeyboard}>
@@ -90,6 +111,7 @@ const SignUpScreen = ({ navigation }) => {
               }}
               onFocus={() => setFocusedInput('email')}
               onBlur={() => setFocusedInput(null)}
+              autoCapitalize="none"
             />
           </View>
 
@@ -126,12 +148,13 @@ const SignUpScreen = ({ navigation }) => {
 
         {/* İleri Butonu */}
         <TouchableOpacity
-          onPress={() =>
-            navigation.navigate('Username', {
-              fullName: fullName,
-              email: email,
-              password: password,
-            })
+          onPress={handleSignUp
+            // () =>
+            // navigation.navigate('Username', {
+            //   fullName: fullName,
+            //   email: email,
+            //   password: password,
+            // })
           }
           style={styles.loginButton}>
           <Text style={styles.loginButtonText}>İleri</Text>
@@ -140,7 +163,7 @@ const SignUpScreen = ({ navigation }) => {
 
       {/* Girişe dön */}
       <View style={styles.registerContainer}>
-        <Text style={styles.registerText}>Style Up hesabım var. </Text>
+        <Text style={styles.registerText}>Sparkles hesabım var. </Text>
         <TouchableOpacity
           onPress={() => navigation.navigate('SignIn')}
           style={styles.registerButton}>
@@ -258,3 +281,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+// const handleSignUp = () => {
+  //   if (fullName && email && password) {
+  //     const userData = { fullName, email, password };
+  //     dispatch(registerUser(userData));
+  //   } else {
+  //     // Hata mesajı ekleyebilirsin
+  //     console.log('Lütfen tüm alanları doldurun.');
+  //   }
+  // };

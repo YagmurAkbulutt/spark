@@ -15,5 +15,5 @@ export const SCREENS = {
     FULLPOSTSCREEN : "FullPost",
     MESSAGELISTSCREEN : "MessageList",
     STARTSCREEN : "Start",
-    POSTCONFIRM: "PostConfirm"
+    POSTCONFIRM: "PostConfirm",
 }

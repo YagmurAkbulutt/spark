@@ -6,22 +6,91 @@ import {
   StyleSheet,
   Image,
   TouchableWithoutFeedback,
+  Animated,
+  Easing,
 } from 'react-native';
 import SvgLess from '../../assets/less';
 import { height } from '../../utils/helpers';
 import Collections from './Collections';
+import { useEffect, useState } from 'react';
 
 const CollectionsModal = ({ collectionModal, setCollectionModal }) => {
 
+   const overlayStyle = collectionModal
+    ? { backgroundColor: 'rgba(0, 0, 0, 0.7)' }  // Modal açık
+    : { backgroundColor: 'rgba(0, 0, 0, 0.5)' }; 
+    const [fadeAnim] = useState(new Animated.Value(0)); // Opaklık için animasyon değeri
+  
+    useEffect(() => {
+      if (collectionModal) {
+        // Modal açıldığında yavaşça görünür hale gelsin
+        Animated.timing(fadeAnim, {
+          toValue: 1, // Tam görünürlük
+          duration: 1000, // 800ms süresince animasyon
+          useNativeDriver: true,
+        }).start();
+      } else {
+        // Modal kapanırken yavaşça kaybolsun
+        Animated.timing(fadeAnim, {
+          toValue: 0, // Opaklığı 0 yapalım
+          duration: 1000, // 800ms süresince animasyon
+          useNativeDriver: true,
+        }).start();
+      }
+    }, [collectionModal]);
+    const [slideAnim] = useState(new Animated.Value(500)); // Animasyon için kayma başlangıcı
+  
+    useEffect(() => {
+      if (collectionModal) {
+        
+        Animated.timing(slideAnim, {
+          toValue: 0, 
+          duration: 800, 
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }).start();
+      } else {
+        
+        Animated.timing(slideAnim, {
+          toValue: 500, 
+          duration: 800, 
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }).start();
+      }
+    }, [collectionModal]);
+
   return (
     <Modal
-    animationType="slide"
+    animationType="none"
     transparent={true}
     visible={collectionModal}
     onRequestClose={() => setCollectionModal(false)}
   >
     <TouchableWithoutFeedback onPress={() => setCollectionModal(false)}>
-      <View style={styles.overlay}>
+
+      <View
+                style={{
+                  flex: 1,
+                  justifyContent: "flex-end",
+                  backgroundColor: "rgba(0, 0, 0, 0.5)", 
+                  position: 'absolute', 
+                  top: 0, 
+                  left: 0,
+                  right: 0, 
+                  bottom: 0, 
+                }}
+              >
+          <Animated.View
+            style={{
+              transform: [{ translateY: slideAnim }],
+              // flex: 1,
+              // justifyContent: "flex-end",
+              // ...overlayStyle,
+              // bottom: keyboardHeight, 
+            }}
+          >
+      {/* <View style={styles.overlay}> */}
         <View style={styles.modalContainer}>
           <View style={styles.container}>
             <View style={styles.headerCont}>
@@ -38,6 +107,8 @@ const CollectionsModal = ({ collectionModal, setCollectionModal }) => {
   
           <Collections />
         </View>
+      {/* </View> */}
+      </Animated.View>
       </View>
     </TouchableWithoutFeedback>
   </Modal>

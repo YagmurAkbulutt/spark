@@ -20,12 +20,14 @@ import StartScreen from '../screens/home/StartScreen';
 import { MessageProvider } from '../components/Message/MessageContext';
 import PostConfirmScreen from '../screens/post/PostConfirmScreen';
 
+
+
 const Stack = createNativeStackNavigator();
 
 const { 
   STARTSCREEN, POSTCONFIRM, SPLASHSCREEN, MESSAGELISTSCREEN, PROFILESCREEN, NOTIFICATIONSCREEN, 
   POSTSCREEN, FULLPOSTSCREEN, CHATSCREEN, MESSAGESCREEN, ENTRYSCREEN, HOMESCREEN, 
-  USERNAMESCREEN, SEARCHSCREEN, SIGNINSCREEN, SIGNUPSCREEN, FORGETPASSWORDSCREEN 
+  USERNAMESCREEN,  SEARCHSCREEN,  SIGNINSCREEN, SIGNUPSCREEN, FORGETPASSWORDSCREEN 
 } = SCREENS;
 
 const AppNavigator = () => {
@@ -33,7 +35,7 @@ const AppNavigator = () => {
     <MessageProvider>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Main" component={BottomTabNavigator} />
+        
           <Stack.Screen name={SPLASHSCREEN} component={SplashScreen} />
           <Stack.Screen name={ENTRYSCREEN} component={EntryScreen} />
           <Stack.Screen name={SIGNINSCREEN} component={SignInScreen} />
@@ -45,13 +47,14 @@ const AppNavigator = () => {
           <Stack.Screen name={MESSAGESCREEN} component={MessageScreen} />
           <Stack.Screen name={STARTSCREEN} component={StartScreen} />
           <Stack.Screen name={POSTCONFIRM} component={PostConfirmScreen} />
+         
           <Stack.Screen 
             name={MESSAGELISTSCREEN} 
             component={MessageListScreen} 
             options={{ tabBarStyle: { display: "flex" } }} 
           />
           
-          
+          <Stack.Screen name="Main" component={BottomTabNavigator} />
         </Stack.Navigator>
       </NavigationContainer>
     </MessageProvider>

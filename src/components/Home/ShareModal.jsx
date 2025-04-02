@@ -38,10 +38,10 @@ const ShareModal = ({modalVisible, setModalVisible}) => {
   const hasSelectedUsers = selectedUsers.length > 1;
     const [filteredUsers, setFilteredUsers] = useState(notifications); 
 
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    
     const heightwindow = Dimensions.get('window').height;
       const animatedHeight = useRef(new Animated.Value(height * 0.85)).current; // Başlangıç yüksekliği
-    
+    const [keyboardHeight, setKeyboardHeight] = useState(new Animated.Value(0));
       useEffect(() => {
         const keyboardShowListener = Keyboard.addListener("keyboardDidShow", (event) => {
           const Modalheight = event.endCoordinates.height;
@@ -146,24 +146,91 @@ const ShareModal = ({modalVisible, setModalVisible}) => {
     { id: 'telegram', label: 'Telegram', icon: () => <SvgTelegram />, onPress: () => handlePlatformShare('telegram') },
     { id: 'share', label: 'Paylaş', icon: () => <SvgShareLink />, onPress: () => handlePlatformShare('share') },
   ];
+
+  const overlayStyle = modalVisible
+  ? { backgroundColor: 'rgba(0, 0, 0, 0.7)' }  // Modal açık
+  : { backgroundColor: 'rgba(0, 0, 0, 0.5)' }; 
+  const [fadeAnim] = useState(new Animated.Value(0)); // Opaklık için animasyon değeri
+
+  useEffect(() => {
+    if (modalVisible) {
+      // Modal açıldığında yavaşça görünür hale gelsin
+      Animated.timing(fadeAnim, {
+        toValue: 1, // Tam görünürlük
+        duration: 1000, // 800ms süresince animasyon
+        useNativeDriver: true,
+      }).start();
+    } else {
+      // Modal kapanırken yavaşça kaybolsun
+      Animated.timing(fadeAnim, {
+        toValue: 0, // Opaklığı 0 yapalım
+        duration: 1000, // 800ms süresince animasyon
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [modalVisible]);
+  const [slideAnim] = useState(new Animated.Value(500)); // Animasyon için kayma başlangıcı
+
+  useEffect(() => {
+    if (modalVisible) {
+      
+      Animated.timing(slideAnim, {
+        toValue: 0, 
+        duration: 800, 
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }).start();
+    } else {
+      
+      Animated.timing(slideAnim, {
+        toValue: 500, 
+        duration: 800, 
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [modalVisible]);
+
   return (
     <Modal
-      animationType="slide"
+      animationType="none"
       transparent={true}
       visible={modalVisible}
       onRequestClose={() => setModalVisible(false)}
     >
-      <KeyboardAvoidingView
+      {/* <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
-      >
+      > */}
         <TouchableWithoutFeedback
       onPress={() => {
         Keyboard.dismiss();
         setModalVisible(false);
       }}
     >
-          <View style={styles.overlay}>
+
+<View
+                style={{
+                  flex: 1,
+                  justifyContent: "flex-end",
+                  backgroundColor: "rgba(0, 0, 0, 0.5)", 
+                  position: 'absolute', 
+                  top: 0, 
+                  left: 0,
+                  right: 0, 
+                  bottom: 0, 
+                }}
+              >
+          <Animated.View
+            style={{
+              transform: [{ translateY: slideAnim }],
+              // flex: 1,
+              // justifyContent: "flex-end",
+              // ...overlayStyle,
+              bottom: keyboardHeight, 
+            }}
+          >
+          {/* <View style={styles.overlay}> */}
             <View style={styles.modalContainer}>
               <View style={styles.scontainer}>
                 <View
@@ -253,9 +320,13 @@ const ShareModal = ({modalVisible, setModalVisible}) => {
                 showsHorizontalScrollIndicator={false}
               />
             </View>
+          {/* </View> */}
+
+
+          </Animated.View>
           </View>
         </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
+      {/* </KeyboardAvoidingView> */}
     </Modal>
   );
   

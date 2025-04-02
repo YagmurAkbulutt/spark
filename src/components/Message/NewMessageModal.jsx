@@ -35,8 +35,8 @@ const NewMessageModal = ({modalVisible, setModalVisible}) => {
 
       // Modal yüksekliğini yumuşak bir geçişle değiştir
       Animated.timing(animatedHeight, {
-        toValue: height * 0.85 - Modalheight, // Modalı küçült
-        duration: 100, // Animasyon süresi (ms)
+        toValue: height * 0.85 - Modalheight, 
+        duration: 100, 
         easing: Easing.out(Easing.ease),
         useNativeDriver: false,
       }).start();
@@ -47,7 +47,7 @@ const NewMessageModal = ({modalVisible, setModalVisible}) => {
       
 
       Animated.timing(animatedHeight, {
-        toValue: height * 0.85, // Modalı eski haline getir
+        toValue: height * 0.85, 
         duration: 50,
         easing: Easing.out(Easing.ease),
         useNativeDriver: false,
@@ -90,7 +90,10 @@ const NewMessageModal = ({modalVisible, setModalVisible}) => {
     behavior={Platform.OS === "ios" ? "padding" : "height"}
     style={{ flex: 1 }}>
     
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <TouchableWithoutFeedback onPress={() => {
+        Keyboard.dismiss();
+        setModalVisible(false);
+      }}>
       <View style={styles.overlay}>
         <Animated.View style={[styles.modalContainer, { height: animatedHeight }]}>
           
@@ -119,6 +122,7 @@ const NewMessageModal = ({modalVisible, setModalVisible}) => {
                 placeholderTextColor="#BBBBBB"
                 onChangeText={setSearchText}
                 value={searchText}
+                selectionColor='#D134AA'
               />
             </View>
 

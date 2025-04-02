@@ -62,5 +62,17 @@
 
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>For saving photos</string>
+	<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>com.googleusercontent.apps.20620325615-63b4hamdj3acvjt8c7fisuipvtaoickm</string>
+        </array>
+    </dict>
+</array>
+
 </dict>
 </plist>

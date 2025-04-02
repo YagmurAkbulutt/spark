@@ -16,6 +16,10 @@ import {height, users, width} from '../../utils/helpers';
 import SearchProfileDetail from '../../components/Search/SearchProfileDetail';
 import SvgBack from '../../assets/back';
 import {launchImageLibrary} from 'react-native-image-picker';
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../redux/slices/authSlice';
 
 const ProfileScreen = ({user, closeModal}) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -44,6 +48,29 @@ const ProfileScreen = ({user, closeModal}) => {
       }
     });
   };
+
+  const [isMenuVisible, setIsMenuVisible] = useState(false); // Menü açık mı?
+  const navigation = useNavigation();
+  const dispatch = useDispatch()
+
+  const handleLogout = async () => {
+    try {
+      console.log("Çıkış işlemi başlatıldı...");
+      dispatch(logout()); // Redux state güncelle
+      setIsMenuVisible(false);
+      console.log("Kullanıcı çıkış yaptı. SignIn ekranına yönlendiriliyor...");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "SignIn" }],
+      });
+    } catch (error) {
+      console.error("Çıkış sırasında hata oluştu:", error);
+    }
+  };
+  
+  
+  
+  
   return (
     <View style={styles.container}>
       <ScrollView
@@ -54,9 +81,17 @@ const ProfileScreen = ({user, closeModal}) => {
             <Text style={styles.username}>bengsel</Text>
             <SvgDown />
           </TouchableOpacity>
-          <TouchableOpacity>
-            <SvgMenu />
-          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => setIsMenuVisible(!isMenuVisible)}>
+        <SvgMenu />
+      </TouchableOpacity>
+
+      {/* Menü Açıldığında Görünecek Çıkış Yap Butonu */}
+      {isMenuVisible && (
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Çıkış Yap</Text>
+        </TouchableOpacity>
+      )}
         </View>
 
         <View style={styles.profileContainer}>
@@ -324,5 +359,17 @@ backgroundColor:"#FFFFFF"
     color:"#9D9C9C",
     fontSize:14,
     fontWeight:"500"
-  }
+  },
+  logoutButton: {
+    position: "absolute",
+    top: 40, // SvgMenu'nun altına konumlandır
+    right: 0,
+    backgroundColor: "#f44336",
+    padding: 10,
+    borderRadius: 5,
+  },
+  logoutText: {
+    color: "white",
+    fontWeight: "bold",
+  },
 });

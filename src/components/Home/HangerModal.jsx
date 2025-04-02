@@ -1,10 +1,10 @@
-import { FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Animated, Easing, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import SvgLess from '../../assets/closeWhite';
 import { height, style } from '../../utils/helpers';
 import SvgFilterWhite from "../../assets/filterWhite";
 import SvgBookmarkS from "../../assets/bookmarkS";
 import SvgBookmarksFill from "../../assets/bookmarksFill"
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { WebView } from "react-native-webview";
 import WebViewModal from './WebViewModal';
 
@@ -30,6 +30,50 @@ const HangerModal = ({ hangerModal, setHangerModal }) => {
     setWebViewUrl(item.websiteUrl);
     setWebViewVisible(true);
   };
+
+  const overlayStyle = hangerModal
+    ? { backgroundColor: 'rgba(0, 0, 0, 0.7)' }  // Modal açık
+    : { backgroundColor: 'rgba(0, 0, 0, 0.5)' }; 
+    const [fadeAnim] = useState(new Animated.Value(0)); // Opaklık için animasyon değeri
+  
+    useEffect(() => {
+      if (hangerModal) {
+        // Modal açıldığında yavaşça görünür hale gelsin
+        Animated.timing(fadeAnim, {
+          toValue: 1, // Tam görünürlük
+          duration: 1000, // 800ms süresince animasyon
+          useNativeDriver: true,
+        }).start();
+      } else {
+        // Modal kapanırken yavaşça kaybolsun
+        Animated.timing(fadeAnim, {
+          toValue: 0, // Opaklığı 0 yapalım
+          duration: 1000, // 800ms süresince animasyon
+          useNativeDriver: true,
+        }).start();
+      }
+    }, [hangerModal]);
+    const [slideAnim] = useState(new Animated.Value(500)); // Animasyon için kayma başlangıcı
+  
+    useEffect(() => {
+      if (hangerModal) {
+        
+        Animated.timing(slideAnim, {
+          toValue: 0, 
+          duration: 800, 
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }).start();
+      } else {
+        
+        Animated.timing(slideAnim, {
+          toValue: 500, 
+          duration: 800, 
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }).start();
+      }
+    }, [hangerModal]);
   
   
 
@@ -66,7 +110,7 @@ const HangerModal = ({ hangerModal, setHangerModal }) => {
 
   return (
     <Modal
-  animationType="slide"
+  animationType="none"
   transparent={true}
   visible={hangerModal}
   onRequestClose={() => setHangerModal(false)}
@@ -76,8 +120,29 @@ const HangerModal = ({ hangerModal, setHangerModal }) => {
       setHangerModal(false);
     }}
   >
-    <View style={{ flex: 1 }}>  
-      <View style={styles.overlay}>
+    <View
+                style={{
+                  flex: 1,
+                  justifyContent: "flex-end",
+                  backgroundColor: "rgba(0, 0, 0, 0.5)", 
+                  position: 'absolute', 
+                  top: 0, 
+                  left: 0,
+                  right: 0, 
+                  bottom: 0, 
+                }}
+              >
+          <Animated.View
+            style={{
+              transform: [{ translateY: slideAnim }],
+              // flex: 1,
+              // justifyContent: "flex-end",
+              // ...overlayStyle,
+              // bottom: keyboardHeight, 
+            }}
+          >
+    {/* <View style={{ flex: 1 }}>  
+      <View style={styles.overlay}> */}
         <View style={styles.modalContainer}>
           <View style={styles.container}>
             <View style={styles.headerCont}>
@@ -109,8 +174,8 @@ const HangerModal = ({ hangerModal, setHangerModal }) => {
             showsHorizontalScrollIndicator={false}
             style={styles.productList}
           />
-        </View>
-      </View>
+        {/* </View>
+      </View> */}
 
       {/* WebView Modal */}
       <WebViewModal
@@ -121,7 +186,9 @@ const HangerModal = ({ hangerModal, setHangerModal }) => {
         data={style}
       />
     </View>
-  </TouchableWithoutFeedback>
+    </Animated.View>
+          </View>
+        </TouchableWithoutFeedback>
 </Modal>
 
   );
