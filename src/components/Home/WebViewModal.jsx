@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   Modal,
   View,
@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Button,
   SafeAreaView,
+  Animated,
 } from 'react-native';
 import WebView from 'react-native-webview';
 import SvgClose from '../../assets/less';
@@ -57,10 +58,12 @@ const WebViewModal = ({ visible, onClose, initialUrl, selectedItem,data }) => {
     setCurrentUrl(item.websiteUrl);
     setWebViewVisible(true);
   };
-
+ 
+  
   const renderSimilarItem = ({ item }) => {
     const isBookmarked = selectedBookmark.includes(item.id);
-
+    console.log('Gelen item:', item);
+    console.log('Foto:', item.photo[0]);
     return (
       <TouchableOpacity
         style={styles.card}
@@ -68,8 +71,7 @@ const WebViewModal = ({ visible, onClose, initialUrl, selectedItem,data }) => {
         onPress={() => openWebView(item)}
       >
         <View style={styles.image}>
-          <Image source={item.photo} style={styles.similarPhoto} />
-          <TouchableOpacity onPress={() => handleBookmarkPress(item.id)}>
+        <Image source={item.photo} style={styles.similarPhoto} />          <TouchableOpacity onPress={() => handleBookmarkPress(item.id)}>
             {isBookmarked ? (
               <SvgBookmarksFill style={styles.bookmark} />
             ) : (
@@ -90,7 +92,67 @@ const WebViewModal = ({ visible, onClose, initialUrl, selectedItem,data }) => {
   };
 
 
+  const [activeIndex, setActiveIndex] = useState(0);
+  const flatListRef = useRef(null);
 
+  const ImageCarousel = ({ photos }) => {
+    const scrollX = useRef(new Animated.Value(0)).current;
+    const [activeIndex, setActiveIndex] = useState(0);
+    const flatListRef = useRef(null);
+  
+    // Check if 'photos' is an array
+    const validPhotos = Array.isArray(photos) ? photos : [];
+  
+    const handleScroll = (event) => {
+      const scrollPosition = event.nativeEvent.contentOffset.x;
+      const index = Math.round(scrollPosition / width);
+      setActiveIndex(index);
+    };
+  
+    return (
+      <View style={{ height: 450, alignItems: "center" }}>
+        {/* 📌 Fotoğraf Kaydırma Alanı */}
+        <FlatList
+          ref={flatListRef}
+          data={validPhotos}
+          keyExtractor={(_, index) => index.toString()}
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+            { useNativeDriver: false, listener: handleScroll }
+          )}
+          renderItem={({ item }) => (
+            <Image
+              source={item}
+              style={{
+                width: width,
+                height: 400,
+                resizeMode: "cover",
+              }}
+            />
+          )}
+        />
+  
+        {/* 📌 Sayfa İndikatoru (Noktalar) */}
+        <View style={{ flexDirection: "row", position: "absolute", bottom: 10 }}>
+          {validPhotos.map((_, index) => (
+            <View
+              key={index}
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 5,
+                backgroundColor: activeIndex === index ? "black" : "lightgray",
+                marginHorizontal: 5,
+              }}
+            />
+          ))}
+        </View>
+      </View>
+    );
+  };
+  
 
   return (
     <>
@@ -117,7 +179,13 @@ const WebViewModal = ({ visible, onClose, initialUrl, selectedItem,data }) => {
             >
               {/* Ürün Görseli ve Kapat Butonu */}
               <View style={styles.imageContainer}>
-                <Image source={item.photo} style={styles.productImage} />
+              
+                  <ImageCarousel photos={item.photo}/>
+                
+               
+               
+               
+               
                 <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                   <SvgClose style={styles.closeIcon} />
                 </TouchableOpacity>

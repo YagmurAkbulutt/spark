@@ -179,14 +179,14 @@ const CommentModal = ({commentModal, setCommentModal,onSubmitComment}) => {
       Animated.timing(fadeAnim, {
         toValue: 1, // Tam görünürlük
         duration: 1000, // 800ms süresince animasyon
-        useNativeDriver: true,
+        useNativeDriver: false,
       }).start();
     } else {
       // Modal kapanırken yavaşça kaybolsun
       Animated.timing(fadeAnim, {
         toValue: 0, // Opaklığı 0 yapalım
         duration: 1000, // 800ms süresince animasyon
-        useNativeDriver: true,
+        useNativeDriver: false,
       }).start();
     }
   }, [commentModal]);
@@ -199,7 +199,7 @@ const CommentModal = ({commentModal, setCommentModal,onSubmitComment}) => {
         toValue: 0, 
         duration: 800, 
         easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
+        useNativeDriver: false,
       }).start();
     } else {
       
@@ -207,167 +207,298 @@ const CommentModal = ({commentModal, setCommentModal,onSubmitComment}) => {
         toValue: 500, 
         duration: 800, 
         easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
+        useNativeDriver: false,
       }).start();
     }
   }, [commentModal]);
+
+  const animatedHeight = useRef(new Animated.Value(height * 0.85)).current;
   return (
-    <Modal
+//     <Modal
+//   animationType="none"
+//   transparent={true}
+//   visible={commentModal}
+//   onRequestClose={() => setCommentModal(false)}
+// >
+//   <TouchableWithoutFeedback onPress={() => setCommentModal(false)}>
+//   <View
+//           style={{
+//             flex: 1,
+//             justifyContent: "flex-end",
+//             backgroundColor: "rgba(0, 0, 0, 0.5)", 
+//             position: 'absolute', 
+//             top: 0, 
+//             left: 0,
+//             right: 0, 
+//             bottom: 0, 
+//           }}
+//         >
+//     <Animated.View
+//       style={{
+//         transform: [{ translateY: slideAnim }],
+//         // flex: 1,
+//         // justifyContent: "flex-end",
+//         // ...overlayStyle,
+//         bottom: keyboardHeight, 
+//       }}
+//     >
+//         {/* <View style={styles.overlay}> */}
+//         <View style={styles.modalContainer}>
+//               <View style={styles.commentHeader}>
+//                 <Text style={styles.title}>Yorumlar</Text>
+//                 <TouchableOpacity
+//                   onPress={() => setCommentModal(false)}
+//                   activeOpacity={0.7}
+//                   style={styles.closeButton}>
+//                   <SvgLess style={styles.closeBtn} />
+//                 </TouchableOpacity>
+//               </View>
+
+//               <FlatList
+//                 data={comments}
+//                 keyExtractor={item => item.id.toString()}
+//                 showsVerticalScrollIndicator={false}
+//                 renderItem={({item}) => (
+//                   <View style={{marginBottom: 20}}>
+//                     <View style={styles.comment}>
+//                       <Image
+//                         source={item.avatar || item.profilePhoto}
+//                         style={styles.commentProfilePhoto}
+//                       />
+//                       <View style={styles.commentBody}>
+//                         <View style={{gap: 2}}>
+//                           <Text style={styles.username}>{item.user}</Text>
+//                           <Text style={styles.text}>{item.text}</Text>
+//                         </View>
+
+//                         <TouchableOpacity
+//                           onPress={() => toggleLike(item.id)}
+//                           style={styles.likeButton}>
+//                           {item.liked ? <SvgLikeFill /> : <SvgLike />}
+//                           <Text style={styles.likeText}>
+//                             {formatLikes(item.likes)}
+//                           </Text>
+//                         </TouchableOpacity>
+//                       </View>
+//                     </View>
+//                     <TouchableOpacity onPress={() => setReplyingTo(item.id)}>
+//                       <Text style={styles.comText}>Yanıtla</Text>
+//                     </TouchableOpacity>
+
+//                     {item.replies.length > 0 && !expandedComments[item.id] && (
+//                       <TouchableOpacity
+//                         onPress={() => toggleReplies(item.id)}
+//                         style={styles.showRepliesButton}>
+//                         <Text style={styles.showRepliesText}>
+//                           {item.replies.length} diğer yorumu gör
+//                         </Text>
+//                       </TouchableOpacity>
+//                     )}
+
+//                     {expandedComments[item.id] && (
+//                       <FlatList
+//                         data={item.replies}
+//                         keyExtractor={reply => reply.id}
+//                         renderItem={({item: reply}) => (
+//                           <View style={styles.replyContainer}>
+//                             <Image
+//                               source={reply.avatar || reply.profilePhoto}
+//                               style={styles.replyAvatar}
+//                             />
+//                             <View style={styles.replyComment}>
+//                               <View>
+//                               <Text style={styles.username}>{reply.user}</Text>
+//                               <Text style={styles.text}>{reply.text}</Text>
+//                               </View>
+//                               <TouchableOpacity
+//             onPress={() => toggleLike(item.id, reply.id)} 
+//             style={styles.likeButton}>
+//             {reply.liked ? <SvgLikeFill /> : <SvgLike />}
+//             <Text style={styles.likeText}>
+//               {formatLikes(reply.likes)}
+//             </Text>
+//           </TouchableOpacity>
+//                             </View>
+//                           </View>
+//                         )}
+//                       />
+//                     )}
+//                   </View>
+//                 )}
+//               />
+// <View style={styles.border}/>
+// <View style={styles.emojiContainer}>
+//   {emojis.map((emoji, index) => (
+//     <TouchableOpacity key={index} onPress={() => addEmojiToInput(emoji)}>
+//       <Text style={styles.emoji}>{emoji}</Text>
+//     </TouchableOpacity>
+//   ))}
+// </View>
+
+
+//               <View style={styles.commentInputContainer}>
+//                 <Image
+//                   source={require('../../assets/profilePhoto.png')}
+//                   style={styles.userImage}
+//                 />
+//                 <TextInput
+//                   style={styles.commentInput}
+//                   placeholder="Yorum ekleyin..."
+//                   value={newComment}
+//                   onChangeText={setNewComment}
+//                 />
+//                 {newComment.trim() !== '' && (
+//                   <TouchableOpacity
+//                     onPress={addComment}
+//                     style={styles.sendButton}>
+//                     <SvgSendBtn />
+//                   </TouchableOpacity>
+//                 )}
+//               </View>
+//             </View>
+//         {/* </View> */}
+      
+//     </Animated.View>
+//     </View>
+//   </TouchableWithoutFeedback>
+// </Modal>
+<Modal
   animationType="none"
   transparent={true}
   visible={commentModal}
-  onRequestClose={() => setCommentModal(false)}
->
-  <TouchableWithoutFeedback onPress={() => setCommentModal(false)}>
-  <View
-          style={{
-            flex: 1,
-            justifyContent: "flex-end",
-            backgroundColor: "rgba(0, 0, 0, 0.5)", 
-            position: 'absolute', 
-            top: 0, 
-            left: 0,
-            right: 0, 
-            bottom: 0, 
-          }}
-        >
-    <Animated.View
-      style={{
-        transform: [{ translateY: slideAnim }],
-        // flex: 1,
-        // justifyContent: "flex-end",
-        // ...overlayStyle,
-        bottom: keyboardHeight, 
-      }}
-    >
-        {/* <View style={styles.overlay}> */}
-          <View style={styles.modalContainer}>
-            <View style={styles.commentHeader}>
-              <Text style={styles.title}>Yorumlar</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  Keyboard.dismiss(); 
-                  setTimeout(() => setCommentModal(false), 100);
-                }}
-                activeOpacity={0.7}
-                style={styles.closeButton}
-              >
-                <SvgLess style={styles.closeBtn} />
-              </TouchableOpacity>
-            </View>
+  onRequestClose={() => setCommentModal(false)}>
 
-            <FlatList
-              data={comments}
-              keyExtractor={(item) => item.id.toString()}
-              showsVerticalScrollIndicator={false}
-              renderItem={({ item }) => (
-                <View style={{ marginBottom: 20 }}>
-                  <View style={styles.comment}>
-                    <Image
-                      source={item.avatar || item.profilePhoto}
-                      style={styles.commentProfilePhoto}
-                    />
-                    <View style={styles.commentBody}>
-                      <View style={{ gap: 2 }}>
-                        <Text style={styles.username}>{item.user}</Text>
-                        <Text style={styles.text}>{item.text}</Text>
-                      </View>
+<KeyboardAvoidingView
+  behavior={Platform.OS === "ios" ? "padding" : "height"}
+  style={{ flex: 1 }}>
 
-                      <TouchableOpacity
-                        onPress={() => toggleLike(item.id)}
-                        style={styles.likeButton}
-                      >
-                        {item.liked ? <SvgLikeFill /> : <SvgLike />}
-                        <Text style={styles.likeText}>
-                          {formatLikes(item.likes)}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                  <TouchableOpacity onPress={() => setReplyingTo(item.id)}>
-                    <Text style={styles.comText}>Yanıtla</Text>
-                  </TouchableOpacity>
+    <TouchableWithoutFeedback onPress={() => {
+      Keyboard.dismiss();
+      setCommentModal(false);
+    }}>
+      <View style={styles.overlay}>
+        <Animated.View style={[styles.modalContainer, { height: animatedHeight }]}>
 
-                  {item.replies.length > 0 && !expandedComments[item.id] && (
-                    <TouchableOpacity
-                      onPress={() => toggleReplies(item.id)}
-                      style={styles.showRepliesButton}
-                    >
-                      <Text style={styles.showRepliesText}>
-                        {item.replies.length} diğer yorumu gör
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-
-                  {expandedComments[item.id] && (
-                    <FlatList
-                      data={item.replies}
-                      keyExtractor={(reply) => reply.id}
-                      renderItem={({ item: reply }) => (
-                        <View style={styles.replyContainer}>
-                          <Image
-                            source={reply.avatar || reply.profilePhoto}
-                            style={styles.replyAvatar}
-                          />
-                          <View style={styles.replyComment}>
-                            <View>
-                              <Text style={styles.username}>{reply.user}</Text>
-                              <Text style={styles.text}>{reply.text}</Text>
-                            </View>
-                            <TouchableOpacity
-                              onPress={() => toggleLike(item.id, reply.id)}
-                              style={styles.likeButton}
-                            >
-                              {reply.liked ? <SvgLikeFill /> : <SvgLike />}
-                              <Text style={styles.likeText}>
-                                {formatLikes(reply.likes)}
-                              </Text>
-                            </TouchableOpacity>
-                          </View>
-                        </View>
-                      )}
-                    />
-                  )}
-                </View>
-              )}
-            />
-
-            <View style={styles.border} />
-
-            <View style={styles.emojiContainer}>
-              {emojis.map((emoji, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => addEmojiToInput(emoji)}
-                >
-                  <Text style={styles.emoji}>{emoji}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <View style={styles.commentInputContainer}>
-              <Image
-                source={require("../../assets/profilePhoto.png")}
-                style={styles.userImage}
-              />
-              <TextInput
-                style={styles.commentInput}
-                placeholder="Yorum ekleyin..."
-                value={newComment}
-                onChangeText={setNewComment}
-              />
-              {newComment.trim() !== "" && (
-                <TouchableOpacity onPress={addComment} style={styles.sendButton}>
-                  <SvgSendBtn />
-                </TouchableOpacity>
-              )}
-            </View>
+          <View style={styles.commentHeader}>
+            <Text style={styles.title}>Yorumlar</Text>
+            <TouchableOpacity
+              onPress={() => setCommentModal(false)}
+              activeOpacity={0.7}
+              style={styles.closeButton}>
+              <SvgLess style={styles.closeBtn} />
+            </TouchableOpacity>
           </View>
-        {/* </View> */}
-      
-    </Animated.View>
-    </View>
-  </TouchableWithoutFeedback>
+<View style={{flex:1}}>
+          <FlatList
+            data={comments}
+            keyExtractor={item => item.id.toString()}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            style={{flex: 1}}
+            nestedScrollEnabled={true}
+  overScrollMode="always"
+  removeClippedSubviews={false}
+  onEndReachedThreshold={0.5}
+            renderItem={({ item }) => (
+              <View style={{ marginBottom: 20 }}>
+                <View style={styles.comment}>
+                  <Image
+                    source={item.avatar || item.profilePhoto}
+                    style={styles.commentProfilePhoto}
+                  />
+                  <View style={styles.commentBody}>
+                    <View style={{ gap: 2 }}>
+                      <Text style={styles.username}>{item.user}</Text>
+                      <Text style={styles.text}>{item.text}</Text>
+                    </View>
+
+                    <TouchableOpacity
+                      onPress={() => toggleLike(item.id)}
+                      style={styles.likeButton}>
+                      {item.liked ? <SvgLikeFill /> : <SvgLike />}
+                      <Text style={styles.likeText}>{formatLikes(item.likes)}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <TouchableOpacity onPress={() => setReplyingTo(item.id)}>
+                  <Text style={styles.comText}>Yanıtla</Text>
+                </TouchableOpacity>
+
+                {item.replies.length > 0 && !expandedComments[item.id] && (
+                  <TouchableOpacity
+                    onPress={() => toggleReplies(item.id)}
+                    style={styles.showRepliesButton}>
+                    <Text style={styles.showRepliesText}>
+                      {item.replies.length} diğer yorumu gör
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
+                {expandedComments[item.id] && (
+                  <FlatList
+                    data={item.replies}
+                    keyExtractor={reply => reply.id}
+                    renderItem={({ item: reply }) => (
+                      <View style={styles.replyContainer}>
+                        <Image
+                          source={reply.avatar || reply.profilePhoto}
+                          style={styles.replyAvatar}
+                        />
+                        <View style={styles.replyComment}>
+                          <View>
+                            <Text style={styles.username}>{reply.user}</Text>
+                            <Text style={styles.text}>{reply.text}</Text>
+                          </View>
+                          <TouchableOpacity
+                            onPress={() => toggleLike(item.id, reply.id)}
+                            style={styles.likeButton}>
+                            {reply.liked ? <SvgLikeFill /> : <SvgLike />}
+                            <Text style={styles.likeText}>{formatLikes(reply.likes)}</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    )}
+                  />
+                )}
+              </View>
+            )}
+          />
+</View>
+          <View style={styles.border} />
+
+          <View style={styles.emojiContainer}>
+            {emojis.map((emoji, index) => (
+              <TouchableOpacity key={index} onPress={() => addEmojiToInput(emoji)}>
+                <Text style={styles.emoji}>{emoji}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <View style={styles.commentInputContainer}>
+            <Image
+              source={require('../../assets/profilePhoto.png')}
+              style={styles.userImage}
+            />
+            <TextInput
+              style={styles.commentInput}
+              placeholder="Yorum ekleyin..."
+              value={newComment}
+              onChangeText={setNewComment}
+              selectionColor="#D134AA"
+            />
+            {newComment.trim() !== '' && (
+              <TouchableOpacity onPress={addComment} style={styles.sendButton}>
+                <SvgSendBtn />
+              </TouchableOpacity>
+            )}
+          </View>
+
+        </Animated.View>
+      </View>
+    </TouchableWithoutFeedback>
+
+  </KeyboardAvoidingView>
 </Modal>
 
   
@@ -382,6 +513,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
+ 
   modalContainer: {
     backgroundColor: 'white',
     borderTopLeftRadius: 20,

@@ -614,7 +614,13 @@ export const post = [
 export const style = [
   {
     id: 1,
-    photo: require("../assets/style-1.png"),
+    photo: [
+      require("../assets/style-1.png"),
+      require("../assets/style-2.png"),
+      require("../assets/style-3.png"),
+      require("../assets/style-4.png"),
+      require("../assets/style-5.png")
+    ],
     store: "Zara",
     product: "Çizgili Mavi Gömlek",
     price: 990.0,
@@ -628,7 +634,13 @@ export const style = [
   },
   {
     id: 2,
-    photo: require("../assets/style-2.png"),
+    photo: [
+      require("../assets/style-2.png"),
+      require("../assets/style-1.png"),
+      require("../assets/style-3.png"),
+      require("../assets/style-4.png"),
+      require("../assets/style-5.png")
+    ],
     store: "Zara",
     product: "Siyah Elbise",
     price: 1190.0,
@@ -642,7 +654,13 @@ export const style = [
   },
   {
     id: 3,
-    photo: require("../assets/style-3.png"),
+    photo: [
+      require("../assets/style-3.png"),
+      require("../assets/style-2.png"),
+      require("../assets/style-1.png"),
+      require("../assets/style-4.png"),
+      require("../assets/style-5.png")
+    ],
     store: "H&M",
     product: "Beyaz Tişört",
     price: 599.0,
@@ -656,7 +674,13 @@ export const style = [
   },
   {
     id: 4,
-    photo: require("../assets/style-4.png"),
+    photo: [
+      require("../assets/style-4.png"),
+      require("../assets/style-2.png"),
+      require("../assets/style-3.png"),
+      require("../assets/style-1.png"),
+      require("../assets/style-5.png")
+    ],
     store: "Mango",
     product: "Kot Pantolon",
     price: 799.0,
@@ -694,7 +718,13 @@ export const style = [
   },
   {
     id: 5,
-    photo: require("../assets/style-5.png"),
+    photo: [
+      require("../assets/style-5.png"),
+      require("../assets/style-2.png"),
+      require("../assets/style-3.png"),
+      require("../assets/style-4.png"),
+      require("../assets/style-1.png")
+    ],
     store: "Bershka",
     product: "Kırmızı Ceket",
     price: 1090.0,

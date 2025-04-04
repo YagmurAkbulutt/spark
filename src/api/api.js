@@ -60,8 +60,17 @@ export default api;
 export const getSafeUserId = (user) => {
   if (!user) return null;
   
-  // String kontrolü de ekleyebiliriz
+  // ID alanlarına erişmeyi dene (farklı formatlar için)
   const userId = user.id || user._id;
-  return typeof userId === 'string' ? userId : null;
+  
+  // Debug için
+  console.log("getSafeUserId - user:", user);
+  console.log("getSafeUserId - extracted userId:", userId);
+  
+  // ID yoksa veya geçersizse null döndür
+  if (!userId) return null;
+  
+  // Eğer ID bir string değilse, string'e çevir
+  return typeof userId === 'string' ? userId : String(userId);
 };
 

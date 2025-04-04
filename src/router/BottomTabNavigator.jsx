@@ -59,7 +59,14 @@ const BottomTabNavigator = () => {
         component={HomeScreen}
       />
       <Tab.Screen options={{ tabBarIcon: ({focused}) => (focused ? <SvgSearchFill/> : <SvgSearch/>) }} name={SEARCHSCREEN} component={SearchScreen} />
-      <Tab.Screen options={{ tabBarIcon: ({focused}) => (focused ? <SvgPostFill/> : <SvgPost/>) }} name={POSTSCREEN} component={PostScreen} />
+      <Tab.Screen 
+      options={{
+         tabBarIcon: ({focused}) => (focused ? <SvgPostFill/> : <SvgPost/>),
+         tabBarStyle:{
+          display:"none"
+         } 
+         
+         }} name={POSTSCREEN} component={PostScreen} />
       <Tab.Screen options={{ tabBarIcon: ({focused}) => (focused ? <SvgNotificationFill/> : <SvgNotifications />) }} name={NOTIFICATIONSCREEN} component={NotificationsScreen} />
       <Tab.Screen options={{ tabBarIcon: ({focused}) => (focused ? <SvgProfileFill/> : <SvgProfile />) }} name={PROFILESCREEN} component={ProfileScreen} />
     </Tab.Navigator>

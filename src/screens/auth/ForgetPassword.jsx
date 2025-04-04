@@ -73,6 +73,21 @@ const ForgetPassword = ({ navigation }) => {
       setModalVisible(true); 
     }
   }, [message]);
+
+  // Eğer şifre sıfırlama e-postası gönderildiyse, kullanıcıya ne yapması gerektiğini açıkla
+  useEffect(() => {
+    if (forgotPasswordSuccess) {
+      const successMessage = `
+        Şifre sıfırlama bağlantısı e-posta adresinize gönderildi!
+        
+        Lütfen e-postanızı kontrol edin ve şifre sıfırlama bağlantısına tıklayın.
+        
+        Not: Eğer uygulama otomatik olarak açılmazsa, bağlantı yerine gelen kodu kopyalayıp buraya yapıştırabilirsiniz.
+      `;
+      setModalMessage(successMessage);
+    }
+  }, [forgotPasswordSuccess]);
+
   return (
   //   <TouchableWithoutFeedback onPress={dismissKeyboard}>
   //     <View style={styles.container}>

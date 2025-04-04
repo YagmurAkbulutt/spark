@@ -9,8 +9,21 @@ const handlePending = (state) => {
 
 const handleRejected = (state, action) => {
   state.status = "failed";
-  state.error = action.payload;
-  console.error("API Error:", action.payload);
+  
+  // Enhanced error handling
+  const error = action.payload;
+  state.error = error;
+  
+  console.error("API Error Details:", {
+    timestamp: new Date().toISOString(),
+    errorType: error?.name || 'UnknownError',
+    message: error?.message || 'No error message available',
+    statusCode: error?.status || error?.response?.status || 'N/A',
+    requestUrl: error?.config?.url || 'Unknown endpoint',
+    requestMethod: error?.config?.method?.toUpperCase() || 'N/A',
+    stackTrace: error?.stack || 'No stack trace available',
+    fullError: error
+  });
 };
 
 // Async Thunk'lar
@@ -44,10 +57,25 @@ export const followUser = createAsyncThunk(
   "follow/followUser",
   async (userId, { rejectWithValue }) => {
     try {
-      if (!userId) throw new Error("Kullanıcı ID'si geçersiz");
+      // ID değerini kontrol et
+      if (!userId || userId === 'undefined' || userId === 'null') {
+        console.error("Geçersiz kullanıcı ID'si:", userId);
+        return rejectWithValue("Kullanıcı ID'si geçersiz");
+      }
+
+      console.log("followUser - Takip edilecek ID:", userId);
+      
       const response = await api.post(`/api/follow/users/${userId}/follow`);
+      
+      // Başarılı yanıt kontrolü
+      if (!response.data || !response.data.data || !response.data.data.follow) {
+        console.error("API yanıtı beklenen formatta değil:", response.data);
+        return rejectWithValue("API yanıtı geçersiz format");
+      }
+      
       return response.data.data.follow;
     } catch (error) {
+      console.error("Takip işlemi API hatası:", error.response?.data || error.message);
       return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
@@ -57,10 +85,18 @@ export const unfollowUser = createAsyncThunk(
   "follow/unfollowUser",
   async (userId, { rejectWithValue }) => {
     try {
-      if (!userId) throw new Error("Kullanıcı ID'si geçersiz");
+      // ID değerini kontrol et
+      if (!userId || userId === 'undefined' || userId === 'null') {
+        console.error("Geçersiz kullanıcı ID'si:", userId);
+        return rejectWithValue("Kullanıcı ID'si geçersiz");
+      }
+
+      console.log("unfollowUser - Takipten çıkarılacak ID:", userId);
+      
       await api.delete(`/api/follow/users/${userId}/follow`);
       return userId;
     } catch (error) {
+      console.error("Takipten çıkarma API hatası:", error.response?.data || error.message);
       return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
@@ -102,8 +138,10 @@ const followSlice = createSlice({
       .addCase(followUser.pending, handlePending)
       .addCase(followUser.fulfilled, (state, action) => {
         state.status = "succeeded";
-        if (action.payload && !state.following.some(f => f.id === action.payload.id)) {
-          state.following.push(action.payload);
+        const followedUser = action.payload?.following; // API yanıtına göre bu doğru olabilir
+        if (followedUser && !state.following.some(f => f.id === followedUser)) {
+          // API'den tam kullanıcı bilgisi gelmiyorsa, burada birleştirme yapmanız gerekebilir
+          state.following.push({ id: followedUser }); // Sadece ID ekliyor, diğer bilgiler eksik
         }
       })
       .addCase(followUser.rejected, handleRejected)
@@ -112,9 +150,10 @@ const followSlice = createSlice({
       .addCase(unfollowUser.pending, handlePending)
       .addCase(unfollowUser.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.following = state.following.filter(f => f.id !== action.payload);
+        const unfollowedUserId = action.payload?.id || action.payload;
+        state.following = state.following.filter(f => f.id !== unfollowedUserId);
       })
-      .addCase(unfollowUser.rejected, handleRejected);
+      .addCase(unfollowUser.rejected, handleRejected)
   }
 });
 

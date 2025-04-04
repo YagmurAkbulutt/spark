@@ -87,7 +87,7 @@ const HangerModal = ({ hangerModal, setHangerModal }) => {
         onPress={() => openWebView(item)}
       >
         <View style={styles.image}>
-          <Image source={item.photo} style={styles.photo} />
+          <Image source={item.photo[0]} style={styles.photo} />
           <TouchableOpacity onPress={() => handleBookmarkPress(item.id)}>
             {isBookmarked ? (
               <SvgBookmarksFill style={styles.bookmark} />
@@ -134,7 +134,7 @@ const HangerModal = ({ hangerModal, setHangerModal }) => {
               >
           <Animated.View
             style={{
-              transform: [{ translateY: slideAnim }],
+              transform: [{ translateY: fadeAnim }],
               // flex: 1,
               // justifyContent: "flex-end",
               // ...overlayStyle,

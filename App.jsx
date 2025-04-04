@@ -1,8 +1,9 @@
-import { Provider } from "react-redux";
+import { Provider, useDispatch } from "react-redux";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { LogBox } from "react-native";
 import store from "./src/redux/store"; 
 import AppNavigator from "./src/router/AppNavigator"; 
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 LogBox.ignoreAllLogs(); 
 
@@ -15,6 +16,8 @@ const App = () => {
     </Provider>
   );
 };
+
+ 
 
 export default App;
 

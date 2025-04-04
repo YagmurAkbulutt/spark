@@ -30,7 +30,9 @@ const SearchPeople = ({ filteredUsers }) => {
       try {
         const storedUsers = await AsyncStorage.getItem('savedUsers');
         if (storedUsers) {
-          setSavedUsers(JSON.parse(storedUsers));
+          const parsedUsers = JSON.parse(storedUsers);
+          const limitedUsers = parsedUsers.slice(0, 7); // sadece ilk 7 kullanıcı
+          setSavedUsers(limitedUsers);
         }
       } catch (error) {
         console.error('Kullanıcılar yüklenirken hata:', error);
@@ -38,16 +40,31 @@ const SearchPeople = ({ filteredUsers }) => {
     };
     loadSavedUsers();
   }, []);
+  
 
   // Kullanıcı seçildiğinde çalışacak fonksiyon
   const handleSelectUser = async (user) => {
     try {
-      // Eğer kullanıcı kayıtlı değilse ekle
-      if (!savedUsers.some(u => u.id === user.id)) {
-        const updatedUsers = [...savedUsers, user];
-        setSavedUsers(updatedUsers);
-        await AsyncStorage.setItem('savedUsers', JSON.stringify(updatedUsers));
+      let updatedUsers = [...savedUsers];
+  
+      const existingIndex = updatedUsers.findIndex(u => u.id === user.id);
+  
+      if (existingIndex !== -1) {
+        // Eğer kullanıcı zaten varsa: önce çıkar, sonra sona ekle
+        updatedUsers.splice(existingIndex, 1);
+        updatedUsers.push(user);
+      } else {
+        // Eğer kullanıcı yoksa:
+        if (updatedUsers.length >= 7) {
+          // En eski kullanıcıyı (ilk) çıkar
+          updatedUsers.shift();
+        }
+        // Yeni kullanıcıyı sona ekle
+        updatedUsers.push(user);
       }
+  
+      setSavedUsers(updatedUsers);
+      await AsyncStorage.setItem('savedUsers', JSON.stringify(updatedUsers));
       
       setSelectedUser(user);
       setModalVisible(true);
@@ -55,6 +72,7 @@ const SearchPeople = ({ filteredUsers }) => {
       console.error('Kullanıcı eklenirken hata:', error);
     }
   };
+  
 
   // Kullanıcıyı listeden kaldır
   const handleRemoveUser = async (userId) => {
@@ -113,22 +131,7 @@ const SearchPeople = ({ filteredUsers }) => {
         )}
       />
 
-      {/* Seçilen kullanıcı için modal */}
-      {/* <Modal
-        animationType="slide"
-        transparent={false}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={[styles.modalContainer, { height: modalHeight }]}>
-          {selectedUser && (
-            <SearchProfile 
-              user={selectedUser} 
-              closeModal={() => setModalVisible(false)} 
-            />
-          )}
-        </View>
-      </Modal> */}
+      
       <Modal
         animationType="none"
         transparent={true}
@@ -209,3 +212,20 @@ const styles = StyleSheet.create({
  
   
 });
+
+{/* Seçilen kullanıcı için modal */}
+      {/* <Modal
+        animationType="slide"
+        transparent={false}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={[styles.modalContainer, { height: modalHeight }]}>
+          {selectedUser && (
+            <SearchProfile 
+              user={selectedUser} 
+              closeModal={() => setModalVisible(false)} 
+            />
+          )}
+        </View>
+      </Modal> */}

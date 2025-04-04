@@ -27,46 +27,47 @@ const SignInScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const { isLoading, error } = useSelector((state) => state.auth); 
 
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const isLoggedIn = await AsyncStorage.getItem("isLoggedIn");
+        const userToken = await AsyncStorage.getItem("userToken"); // Örnek: token saklama
+        
+        if (isLoggedIn === "true" && userToken) {
+          // Redux state'ini güncelle (eğer gerekliyse)
+          // Örneğin: dispatch(setAuthToken(userToken));
+          navigation.replace("Main");
+        }
+      } catch (error) {
+        console.error("Login status check failed:", error);
+      }
+    };
+    
+    checkLoginStatus();
+  }, []);
+
   const handleLogin = async () => {
-    console.log("Login işlemi başlatıldı.");
-    console.log("Identifier (email veya username):", identifier);
-    console.log("Password:", password);
-  
     if (!identifier || !password) {
       alert("Lütfen kullanıcı adı/e-posta ve şifrenizi girin.");
       return;
     }
-  
-    let loginData = { identifier, password }; 
-  
-    console.log("Gönderilen loginData:", loginData);
-  
+
     try {
-      console.log("Dispatch işlemi yapılıyor...");
-      const resultAction = await dispatch(loginUser(loginData));  
-      console.log("Dispatch tamamlandı.", resultAction);
-  
+      const resultAction = await dispatch(loginUser({ identifier, password }));
+      
       if (loginUser.fulfilled.match(resultAction)) {
-        console.log("Login başarılı.");
-        await AsyncStorage.setItem("isLoggedIn", "true");
-        navigation.navigate("Main"); 
-      } else {
-        console.log("Giriş işlemi başarısız:", resultAction);
+        // Giriş başarılıysa daha fazla veri sakla
+        await AsyncStorage.multiSet([
+          ["isLoggedIn", "true"],
+          ["userToken", resultAction.payload.token], 
+          ["username", identifier] 
+        ]);
+        navigation.navigate("Main");
       }
     } catch (error) {
-      console.error("Giriş işlemi sırasında hata oluştu:", error);
+      console.error("Giriş hatası:", error);
     }
   };
-
-  useEffect(() => {
-    const checkLoginStatus = async () => {
-      const isLoggedIn = await AsyncStorage.getItem("isLoggedIn");
-      if (isLoggedIn === "true") {
-        navigation.replace("Main"); 
-      }
-    };
-    checkLoginStatus();
-  }, []);
 
   return (
     <TouchableWithoutFeedback onPress={dismissKeyboard}>
@@ -92,9 +93,9 @@ const SignInScreen = ({ navigation }) => {
     selectionColor='#D134AA'
     onFocus={() => setFocusedInput('username')}
     onBlur={() => setFocusedInput(null)}
-    value={identifier}  // Sadece identifier'ı göster
+    value={identifier} 
     onChangeText={(text) => {
-      setIdentifier(text);  // Kullanıcı girişini identifier olarak ayarla
+      setIdentifier(text); 
     }}
     autoCapitalize="none"
   />
@@ -136,14 +137,6 @@ const SignInScreen = ({ navigation }) => {
           style={styles.forgotPasswordContainer}>
           <Text style={styles.forgotPasswordText}>Şifreni mi unuttun?</Text>
         </TouchableOpacity>
-
-        {/* Giriş Yap Butonu */}
-       {/* Hata Mesajı */}
-       {/* {error && typeof error === "object" ? (
-  <Text style={styles.errorText}>{error.message}</Text>
-) : (
-  <Text style={styles.errorText}>{error}</Text>
-)} */}
 
 
 {/* Giriş Yap Butonu */}

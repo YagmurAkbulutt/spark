@@ -10,6 +10,7 @@ const SearchScreen = ({navigation}) => {
   
   return (
     <SafeAreaView style={styles.container}>
+      
       <ScrollView 
         contentContainerStyle={styles.scrollContainer} 
         showsVerticalScrollIndicator={false}

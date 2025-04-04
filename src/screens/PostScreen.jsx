@@ -29,18 +29,6 @@ const PostScreen = ({ navigation }) => {
   const cameraRef = useRef(null);
 
 
-  useEffect(() => {
-    navigation.setOptions({
-      tabBarStyle: { display: 'none' },
-    });
-
-    return () => {
-      navigation.setOptions({
-        tabBarStyle: { display: 'flex' },
-      });
-    };
-  }, [navigation]);
-
   const toggleCameraType = () => {
     setCameraType((prevType) =>
       prevType === CameraType.Back ? CameraType.Front : CameraType.Back
@@ -181,17 +169,14 @@ const PostScreen = ({ navigation }) => {
     <View style={styles.container}>
       {!capturedPhoto ? (
        <Camera
+       ratioOverlay={true}
        ref={cameraRef}
        style={styles.camera}
        cameraType={cameraType}
        zoomMode="off"
        focusMode="off"
-       ratioOverlayColor= "transparent"
        flashMode={torchMode} 
        torchMode={torchMode}
-      laserColor= 'transparent' 
-      frameColor= 'transparent' 
-      scanBarcode={false}
      />
      
      
@@ -307,10 +292,14 @@ const PostScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, 
+  container: { width:"100%" ,
+    height:"100%"
     // backgroundColor: 'transparent' 
   },
-  camera: { flex: 1, backgroundColor: 'transparent',shadowColor: 'transparent' },
+  camera: { width:"100%" ,
+  height:"100%",
+  // backgroundColor: 'transparent' 
+},
   preview: { flex: 1, resizeMode: "cover" },
   controls: {
     position: "absolute",

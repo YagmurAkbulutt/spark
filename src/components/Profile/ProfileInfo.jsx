@@ -1,126 +1,58 @@
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {height, width} from '../../utils/helpers';
 import SvgDot from '../../assets/dot';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchFollowers, fetchFollowing, followUser, unfollowUser } from '../../redux/slices/followSlice';
-import { useEffect, useState } from 'react';
-import { getSafeUserId } from '../../api/api';
 
-const ProfileInfo = ({ user,  isFollowingUser }) => {
-  const dispatch = useDispatch();
-  const followers = useSelector((state) => state.follow.followers);
-  const following = useSelector((state) => state.follow.following);
-  const [isFollowing, setIsFollowing] = useState(false);
-
-  const [isLoading, setIsLoading] = useState(false);
-
-  const userId = getSafeUserId(user); // user.id || user._id şeklinde
-  
-// Kullanıcının takip edilip edilmediğini kontrol et
-useEffect(() => {
-  if (userId && following) {
-    const followingStatus = following.some(follow => follow.id === userId);
-    setIsFollowing(followingStatus);
-  }
-}, [userId, following]);
-
-// Takipçi ve takip edilen verilerini yükle
-useEffect(() => {
-  if (userId) {
-    dispatch(fetchFollowers(userId));
-    dispatch(fetchFollowing(userId));
-  }
-}, [userId, dispatch]);
-
-// Takipçi ve takip edilen sayılarını formatlama
-const formatFollow = (num) => {
-  if (num === undefined || num === null) return '0';
-  if (num >= 1_000_000) {
-    const formatted = (num / 1_000_000).toFixed(1).replace('.', ',');
-    return formatted.endsWith(',0') 
-      ? formatted.slice(0, -2) + ' M' 
-      : formatted + ' M';
-  } else if (num >= 1_000) {
-    const formatted = (num / 1_000).toFixed(1).replace('.', ',');
-    return formatted.endsWith(',0') 
-      ? formatted.slice(0, -2) + ' B' 
-      : formatted + ' B';
-  }
-  return num.toString();
-};
-
-
-useEffect(() => {
-  console.log("Kullanıcı Bilgileri:", {
-    profilePicture: user?.profilePicture,
-    fullName: user?.fullName,
-    username: user?.username,
-    bio: user?.bio,
-    followersCount: followers.length,
-    followingCount: following.length,
-    userId 
-  });
-}, [user, followers, following, userId]);
-
-const [localFollowing, setLocalFollowing] = useState(false);
-const [localFollowersCount, setLocalFollowersCount] = useState(user?.followersCount || 0);
-
-// Takip durumunu senkronize et
-useEffect(() => {
-  if (userId && following) {
-    const isFollowing = following.some(f => f.id === userId);
-    setLocalFollowing(isFollowing);
-  }
-}, [following, userId]);
-
-const handleFollowToggle = async () => {
-  if (!userId) {
-    console.error("Takip işlemi için geçerli kullanıcı ID'si yok");
-    return;
-  }
-
-  try {
-    if (localFollowing) {
-      await dispatch(unfollowUser(userId)).unwrap();
-      setLocalFollowersCount(prev => prev - 1);
-    } else {
-      await dispatch(followUser(userId)).unwrap();
-      setLocalFollowersCount(prev => prev + 1);
+const ProfileInfo = ({
+  user,
+  handleFollowToggle,
+  isFollowingUser,
+  isLoading,
+}) => {
+  // Takipçi ve takip edilen sayılarını formatlama
+  const formatFollow = num => {
+    if (num === undefined || num === null) return '0';
+    if (num >= 1_000_000) {
+      const formatted = (num / 1_000_000).toFixed(1).replace('.', ',');
+      return formatted.endsWith(',0')
+        ? formatted.slice(0, -2) + ' M'
+        : formatted + ' M';
+    } else if (num >= 1_000) {
+      const formatted = (num / 1_000).toFixed(1).replace('.', ',');
+      return formatted.endsWith(',0')
+        ? formatted.slice(0, -2) + ' B'
+        : formatted + ' B';
     }
-    setLocalFollowing(!localFollowing);
-    
-    dispatch(fetchFollowing(userId));
-  } catch (err) {
-    console.error("Takip işlemi hatası:", err);
-  }
-};
+    return num.toString();
+  };
 
   return (
     <>
       <View style={styles.container}>
         {/* Profil Resmi */}
         <View style={styles.profileImageContainer}>
-          <Image 
-            source={{ uri: user?.profilePicture }} 
+          <Image
+            source={{uri: user?.profilePicture}}
             style={styles.userImage}
-            onError={(e) => console.log("Resim yüklenemedi:", e.nativeEvent.error)}
+            onError={e =>
+              console.log('Resim yüklenemedi:', e.nativeEvent.error)
+            }
           />
         </View>
 
         {/* Kullanıcı Bilgileri */}
         <View style={styles.userInfo}>
-          <Text style={styles.username}>{user?.username || 'Fullname'}</Text>
-          
+          <Text style={styles.username}>
+            {user?.username || 'Kullanıcı Adı'}
+          </Text>
+
           {/* Takipçi/Takip Bilgileri */}
           <View style={styles.follow}>
             <Text style={styles.followCountText}>
-              {formatFollow(followers.length)} takipçi
+              {formatFollow(user?.followersCount)} takipçi
             </Text>
             <SvgDot />
             <Text style={styles.followCountText}>
-              {
-              formatFollow(following.length)
-              } takip
+              {formatFollow(user?.followingCount)} takip
             </Text>
           </View>
 
@@ -129,14 +61,20 @@ const handleFollowToggle = async () => {
             <TouchableOpacity
               style={[
                 styles.followButton,
-                isFollowing ? styles.unfollowButton : null,
+                isFollowingUser ? styles.unfollowButton : null,
+                isLoading ? styles.disabledButton : null,
               ]}
               onPress={handleFollowToggle}
-            >
-              <Text style={isFollowing ? styles.unfollowText : styles.followText}>
-                {localFollowing ? "Takibi Bırak" : "Takip"}
+              disabled={isLoading}>
+              <Text
+                style={[
+                  isFollowingUser ? styles.unfollowText : styles.followText,
+                  isLoading ? styles.loadingText : null,
+                ]}>
+                {isFollowingUser ? 'Takibi Bırak' : 'Takip'}
               </Text>
             </TouchableOpacity>
+
             <TouchableOpacity style={styles.dotContainer} activeOpacity={0.7}>
               <Text style={styles.dot}>...</Text>
             </TouchableOpacity>
@@ -145,9 +83,7 @@ const handleFollowToggle = async () => {
       </View>
 
       {/* Kullanıcı Bio */}
-      <Text style={styles.userBio}>
-{user?.bio || "Bio"}      
-</Text>
+      <Text style={styles.userBio}>{user?.bio}</Text>
     </>
   );
 };
@@ -164,7 +100,7 @@ const styles = StyleSheet.create({
   userImage: {
     width: width * 0.26,
     height: width * 0.26,
-    borderRadius:76
+    borderRadius: 76,
   },
   userInfo: {
     marginLeft: 20,
@@ -229,11 +165,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     alignSelf: 'center',
   },
-  userBio:{
-    marginHorizontal:20,
-    lineHeight:18,
-    fontSize:14,
-    color:"#454545",
-    marginTop:20
-  }
+  userBio: {
+    marginHorizontal: 20,
+    lineHeight: 18,
+    fontSize: 14,
+    color: '#454545',
+    marginTop: 20,
+  },
 });
+//  Debug log'ları
+// useEffect(() => {
+//   console.log("ProfileInfo - Current follow status:", {
+//     optimisticIsFollowing,
+//     followersCount,
+//     followingCount: following.length
+//   });
+// }, [optimisticIsFollowing,  following]);

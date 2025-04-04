@@ -8,6 +8,7 @@ export const SCREENS = {
     SPLASHSCREEN : "Splash",
     ENTRYSCREEN :  "Entry",
     FORGETPASSWORDSCREEN : "ForgetPassword",
+    RESETPASSWORDSCREEN : "ResetPassword",
     NOTIFICATIONSCREEN : "Notification",
     USERNAMESCREEN : "Username",
     MESSAGESCREEN : "Message",

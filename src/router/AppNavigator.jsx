@@ -19,6 +19,7 @@ import MessageListScreen from '../screens/messages/MessageListScreen';
 import StartScreen from '../screens/home/StartScreen';
 import { MessageProvider } from '../components/Message/MessageContext';
 import PostConfirmScreen from '../screens/post/PostConfirmScreen';
+import ResetPassword from '../screens/auth/ResetPassword';
 
 
 
@@ -27,19 +28,37 @@ const Stack = createNativeStackNavigator();
 const { 
   STARTSCREEN, POSTCONFIRM, SPLASHSCREEN, MESSAGELISTSCREEN, PROFILESCREEN, NOTIFICATIONSCREEN, 
   POSTSCREEN, FULLPOSTSCREEN, CHATSCREEN, MESSAGESCREEN, ENTRYSCREEN, HOMESCREEN, 
-  USERNAMESCREEN,  SEARCHSCREEN,  SIGNINSCREEN, SIGNUPSCREEN, FORGETPASSWORDSCREEN 
+  USERNAMESCREEN,  SEARCHSCREEN,  SIGNINSCREEN, SIGNUPSCREEN, FORGETPASSWORDSCREEN, RESETPASSWORDSCREEN 
 } = SCREENS;
+
+// Deep linking yapılandırması
+const linking = {
+  prefixes: ['http://localhost:8081', 'styleup://'],
+  config: {
+    screens: {
+      [RESETPASSWORDSCREEN]: {
+        path: 'reset-password/:token',
+        parse: {
+          token: token => token
+        }
+      },
+      [SIGNINSCREEN]: 'signin',
+      [FORGETPASSWORDSCREEN]: 'forget-password',
+    }
+  }
+};
 
 const AppNavigator = () => {
   return (
     <MessageProvider>
-      <NavigationContainer>
+      <NavigationContainer linking={linking}>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
         
           <Stack.Screen name={SPLASHSCREEN} component={SplashScreen} />
           <Stack.Screen name={ENTRYSCREEN} component={EntryScreen} />
           <Stack.Screen name={SIGNINSCREEN} component={SignInScreen} />
           <Stack.Screen name={FORGETPASSWORDSCREEN} component={ForgetPassword} />
+          <Stack.Screen name={RESETPASSWORDSCREEN} component={ResetPassword} />
           <Stack.Screen name={SIGNUPSCREEN} component={SignUpScreen} />
           <Stack.Screen name={USERNAMESCREEN} component={UsernameScreen} />
           <Stack.Screen name={FULLPOSTSCREEN} component={FullPostScreen} />

@@ -11,52 +11,99 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchFollowers, fetchFollowing, followUser, unfollowUser } from '../../redux/slices/followSlice';
 import store from '../../redux/store';
+import { getSafeUserId } from '../../api/api';
 
 const SearchProfile = ({ user, closeModal }) => {
-  // Redux store'dan takipçi ve takip edilenleri al
-  const followers = useSelector((state) => state.follow.followers);
-  const following = useSelector((state) => state.follow.following);
-  
-  // Kullanıcının takip edilip edilmediğini kontrol et
-  const isFollowingUser = useMemo(() => {
-    return following.some((follow) => follow._id === user?._id);
-  }, [following, user?.id]);
-
   const dispatch = useDispatch();
+  const { followers, following, followStatus } = useSelector((state) => ({
+    followers: state.follow.followers,
+    following: state.follow.following,
+    followStatus: state.follow.status
+  }));
+  const [isLoading, setIsLoading] = useState(false);
+  const userId = getSafeUserId(user);
+  const [optimisticState, setOptimisticState] = useState({
+    isFollowing: false,
+    followersCount: 0
+  });
 
+  // const userId = getSafeUserId(user);
   const randomUser = useMemo(() => {
     return users[Math.floor(Math.random() * users.length)];
-  }, []);
+  }, []); 
 
-  // Kullanıcı bilgilerini konsola logla
+  // Başlangıç durumunu ve değişiklikleri yöneten tek useEffect
   useEffect(() => {
-    console.log("Aktarılan Kullanıcı Bilgileri:", {
-      profilePicture: user?.profilePicture,
-      fullName: user?.fullName,
-      username: user?.username,
-      followersCount: followers.length,
-      followingCount: following.length
+    if (!userId) return;
+
+    // Redux'tan güncel takip durumunu kontrol et
+    const isCurrentlyFollowing = following.some(f => 
+      f.id === userId || f._id === userId || f.userId === userId
+    );
+
+    // Optimistik state'i güncelle (ancak zaten doğru değilse)
+    setOptimisticState(prev => {
+      if (prev.isFollowing !== isCurrentlyFollowing || 
+          prev.followersCount !== followers.length) {
+        return {
+          isFollowing: isCurrentlyFollowing,
+          followersCount: followers.length
+        };
+      }
+      return prev;
     });
-  }, [user, followers, following]);
 
-  // Takipçi ve takip edilenleri fetch et
-  useEffect(() => {
-    if (user?.id) {
-      dispatch(fetchFollowers(user.id));
-      dispatch(fetchFollowing(user.id));
-    }
-  }, [dispatch, user?.id]);
+  }, [userId, following, followers]);
 
-  // Takip/Takibi bırak işlemi
-  const handleFollowToggle = () => {
-    if (!user?.id) return;
-    
-    if (isFollowingUser) {
-      dispatch(unfollowUser(user.id));
-    } else {
-      dispatch(followUser(user.id));
+  const handleFollowToggle = async () => {
+    if (!userId || isLoading) return;
+
+    setIsLoading(true);
+    const wasFollowing = optimisticState.isFollowing;
+
+    // 1. Anında optimistik güncelleme
+    setOptimisticState(prev => ({
+      isFollowing: !wasFollowing,
+      followersCount: wasFollowing ? prev.followersCount - 1 : prev.followersCount + 1
+    }));
+
+    try {
+      // 2. API çağrısı yap
+      if (wasFollowing) {
+        await dispatch(unfollowUser(userId));
+      } else {
+        await dispatch(followUser(userId));
+      }
+
+      // 3. Yeni verileri çek
+      await Promise.all([
+        dispatch(fetchFollowing(userId)),
+        dispatch(fetchFollowers(userId))
+      ]);
+
+      // Redux store güncellendiğinde useEffect otomatik olarak state'i senkronize edecek
+
+    } catch (error) {
+      console.error("İşlem başarısız:", error);
+      // 4. Hata durumunda geri al
+      setOptimisticState(prev => ({
+        isFollowing: wasFollowing,
+        followersCount: wasFollowing ? prev.followersCount + 1 : prev.followersCount - 1
+      }));
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  // DEBUG: Konsola takip durumunu yazdır
+  useEffect(() => {
+    console.log('Current follow status:', {
+      isFollowing: optimisticState.isFollowing,
+      followersCount: optimisticState.followersCount,
+      actualFollowing: following.map(f => f.id || f._id || f.userId),
+      userId
+    });
+  }, [optimisticState, following, userId]);
 
   if (!user) return null;
 
@@ -71,24 +118,23 @@ const SearchProfile = ({ user, closeModal }) => {
         </TouchableOpacity>
       </View>
       
-      {/* ProfileInfo'ya tüm gerekli bilgileri aktar */}
       <ProfileInfo 
         user={{
-          profilePicture: user.profilePicture,
-          fullName: user.fullName,
-          username: user.username,
-          followersCount: followers.length,
+          ...user,
+          id: userId,
+          followersCount: optimisticState.followersCount,
           followingCount: following.length
         }}
-        handleFollowToggle={handleFollowToggle} 
-        isFollowingUser={isFollowingUser}
+        handleFollowToggle={handleFollowToggle}
+        isFollowingUser={optimisticState.isFollowing}
+        isLoading={isLoading}
       />
       
-      {isFollowingUser ? (
-        <SearchProfileDetail />
+      {optimisticState.isFollowing ? (
+        <SearchProfileDetail user={user} />
       ) : (
         <>
-          <SearchProfileHidden />
+          <SearchProfileHidden user={user} />
           <FollowCard randomUser={randomUser} />
         </>
       )}
@@ -121,5 +167,4 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: 'gray',
   },
-  
-});
+})

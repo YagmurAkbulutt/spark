@@ -83,7 +83,7 @@ const CollectionsModal = ({ collectionModal, setCollectionModal }) => {
               >
           <Animated.View
             style={{
-              transform: [{ translateY: slideAnim }],
+              transform: [{ translateY: fadeAnim }],
               // flex: 1,
               // justifyContent: "flex-end",
               // ...overlayStyle,

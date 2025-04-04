@@ -192,46 +192,24 @@ const ShareModal = ({modalVisible, setModalVisible}) => {
   }, [modalVisible]);
 
   return (
-    <Modal
-      animationType="none"
-      transparent={true}
-      visible={modalVisible}
-      onRequestClose={() => setModalVisible(false)}
-    >
-      {/* <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      > */}
-        <TouchableWithoutFeedback
-      onPress={() => {
-        Keyboard.dismiss();
-        setModalVisible(false);
-      }}
-    >
-
-<View
-                style={{
-                  flex: 1,
-                  justifyContent: "flex-end",
-                  backgroundColor: "rgba(0, 0, 0, 0.5)", 
-                  position: 'absolute', 
-                  top: 0, 
-                  left: 0,
-                  right: 0, 
-                  bottom: 0, 
-                }}
-              >
-          <Animated.View
-            style={{
-              transform: [{ translateY: slideAnim }],
-              // flex: 1,
-              // justifyContent: "flex-end",
-              // ...overlayStyle,
-              bottom: keyboardHeight, 
-            }}
-          >
+   <Modal
+     animationType="none"
+     transparent={true}
+     visible={modalVisible}
+     onRequestClose={() => setModalVisible(false)}>
+   
+     <KeyboardAvoidingView
+       behavior={Platform.OS === "ios" ? "padding" : "height"}
+       style={{ flex: 1 }}>
+   
+       <TouchableWithoutFeedback onPress={() => {
+         Keyboard.dismiss();
+         setModalVisible(false);
+       }}>
+         <View style={styles.overlay}>
+           <Animated.View style={[styles.modalContainer, { height: animatedHeight }]}>
           {/* <View style={styles.overlay}> */}
-            <View style={styles.modalContainer}>
+            {/* <View style={styles.modalContainer}> */}
               <View style={styles.scontainer}>
                 <View
                   style={[
@@ -319,14 +297,14 @@ const ShareModal = ({modalVisible, setModalVisible}) => {
                 contentContainerStyle={styles.shareScroll}
                 showsHorizontalScrollIndicator={false}
               />
-            </View>
+            {/* </View> */}
           {/* </View> */}
 
 
           </Animated.View>
           </View>
         </TouchableWithoutFeedback>
-      {/* </KeyboardAvoidingView> */}
+      </KeyboardAvoidingView>
     </Modal>
   );
   
