@@ -21,6 +21,7 @@ import SvgBack from '../../assets/back';
 import SvgBookmarkS from "../../assets/bookmarkS";
 import SvgBookmarksFill from "../../assets/bookmarksFill"
 import { height, width } from '../../utils/helpers';
+import HangerImageCarousel from './HangerImageCarousel';
 enableScreens(false);
 
 const WebViewModal = ({ visible, onClose, initialUrl, selectedItem,data }) => {
@@ -95,63 +96,7 @@ const WebViewModal = ({ visible, onClose, initialUrl, selectedItem,data }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef(null);
 
-  const ImageCarousel = ({ photos }) => {
-    const scrollX = useRef(new Animated.Value(0)).current;
-    const [activeIndex, setActiveIndex] = useState(0);
-    const flatListRef = useRef(null);
   
-    // Check if 'photos' is an array
-    const validPhotos = Array.isArray(photos) ? photos : [];
-  
-    const handleScroll = (event) => {
-      const scrollPosition = event.nativeEvent.contentOffset.x;
-      const index = Math.round(scrollPosition / width);
-      setActiveIndex(index);
-    };
-  
-    return (
-      <View style={{ height: 450, alignItems: "center" }}>
-        {/* 📌 Fotoğraf Kaydırma Alanı */}
-        <FlatList
-          ref={flatListRef}
-          data={validPhotos}
-          keyExtractor={(_, index) => index.toString()}
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-            { useNativeDriver: false, listener: handleScroll }
-          )}
-          renderItem={({ item }) => (
-            <Image
-              source={item}
-              style={{
-                width: width,
-                height: 400,
-                resizeMode: "cover",
-              }}
-            />
-          )}
-        />
-  
-        {/* 📌 Sayfa İndikatoru (Noktalar) */}
-        <View style={{ flexDirection: "row", position: "absolute", bottom: 10 }}>
-          {validPhotos.map((_, index) => (
-            <View
-              key={index}
-              style={{
-                width: 10,
-                height: 10,
-                borderRadius: 5,
-                backgroundColor: activeIndex === index ? "black" : "lightgray",
-                marginHorizontal: 5,
-              }}
-            />
-          ))}
-        </View>
-      </View>
-    );
-  };
   
 
   return (
@@ -180,7 +125,7 @@ const WebViewModal = ({ visible, onClose, initialUrl, selectedItem,data }) => {
               {/* Ürün Görseli ve Kapat Butonu */}
               <View style={styles.imageContainer}>
               
-                  <ImageCarousel photos={item.photo}/>
+                  <HangerImageCarousel photos={item.photo}/>
                 
                
                

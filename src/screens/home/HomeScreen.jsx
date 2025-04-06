@@ -9,6 +9,7 @@ import {
   FlatList,
   Dimensions,
   TouchableWithoutFeedback,
+  useWindowDimensions,
 } from 'react-native';
 import MasonryList from 'react-native-masonry-list';
 import {height, imageData, width} from '../../utils/helpers';
@@ -90,7 +91,16 @@ const HomeScreen = () => {
     }
   };
   
-
+  const handleOpenImage = (image) => {
+    // 1. Önce FlatList'i sıfırla (scroll'u en başa al)
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+  
+    // 2. Modal'ı kapat ve hemen yeni resmi aç (50ms gecikmeyle)
+    setSelectedImage(null);
+    setTimeout(() => {
+      setSelectedImage(image);
+    }, 50);
+  };
   const customImageComponent = useMemo(
     () => item => {
       const foundItem = formattedImages.find(i => i.uri === item.source.uri);
@@ -100,10 +110,10 @@ const HomeScreen = () => {
       };
 
       return foundItem ? (
-        <ImageCarousel item={foundItem} onPress={handlePress} />
+        <ImageCarousel item={foundItem} onPress={() => handleOpenImage(foundItem)} />
       ) : null;
     },
-    [formattedImages],
+    [formattedImages,handleOpenImage],
   );
 
   const dataToScroll = formattedImages.map(image => ({
@@ -139,8 +149,24 @@ const HomeScreen = () => {
     console.log("Tüm Postlar (formattedImages + posts):", allPosts);
   }, [allPosts]);
 
+  const { height: screenHeight, width: screenWidth } = useWindowDimensions();
 
+  const flatListRef = useRef(null);
 
+  useEffect(() => {
+    if (selectedImage) {
+      const index = formattedImages.findIndex(img => img.id === selectedImage.id);
+      flatListRef.current?.scrollToIndex({ index, animated: false });
+    }
+  }, [selectedImage]);
+ 
+ 
+  
+  const handleCloseModal = () => {
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+    setSelectedImage(null);
+  };
+  
   return (
     <View style={styles.container}>
       <Header />
@@ -183,40 +209,44 @@ const HomeScreen = () => {
       </>
       {selectedImage && (
        <Modal
+       key={selectedImage?.id || "default"}  // 🔴 Yeni resimde tamamen yeniden oluştur
        visible={!!selectedImage}
        animationType="slide"
-       onRequestClose={() => setSelectedImage(null)}
+       onRequestClose={handleCloseModal}
        transparent={true}
      >
        {formattedImages.length > 0 ? (
          
-           <View style={{ flex: 1 }}>
-             <FlatList
-               data={allPosts}
-               keyExtractor={(item, index) =>
-                 item.id ? item.id.toString() : index.toString()
-               }
-               onScroll={handleScrollCloseModal}
-               showsVerticalScrollIndicator={false}
-               pagingEnabled
-               style={{ flex: 1, height: height * 100 }}
-               getItemLayout={(data, index) => ({
-                 length: Dimensions.get("window").width,
-                 offset: Dimensions.get("window").width * index,
-                 index,
-               })}
-               initialScrollIndex={formattedImages.findIndex(
-                 (img) => img.id === selectedImage.id
-               )}
-               renderItem={({ item }) => (
-                 <FullPostScreen
-                   image={item}
-                   onClose={() => setSelectedImage(null)}
-                   extraData={dataToScroll}
-                 />
-               )}
-             />
-           </View>
+         <View style={{ flex: 1 }}>
+         <FlatList
+           data={allPosts}
+           keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+           onScroll={handleScrollCloseModal}
+           showsVerticalScrollIndicator={false}
+           pagingEnabled
+           style={{ flex: 1 }} // Dış View ile aynı boyutta
+           snapToAlignment="start" // Her kaydırmada tam ekran geçişi
+           decelerationRate="fast" // Kaydırma hızı
+           getItemLayout={(data, index) => ({
+             length: screenHeight, // Her öğe ekran yüksekliğinde
+             offset: screenHeight * index, // Kaydırma offset'i
+             index,
+           })}
+           ref={flatListRef}
+           initialScrollIndex={formattedImages.findIndex(
+             (img) => img.id === selectedImage.id
+           )}
+           renderItem={({ item }) => (
+             <View style={{ height: screenHeight }}> 
+               <FullPostScreen
+                 image={item}
+                 onClose={() => setSelectedImage(null)}
+                 extraData={dataToScroll}
+               />
+             </View>
+           )}
+         />
+       </View>
          
        ) : (
          <Text style={{ textAlign: "center", marginTop: 20 }}>Yükleniyor...</Text>

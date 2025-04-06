@@ -8,6 +8,7 @@ import {
   Text,
   Animated,
   TouchableWithoutFeedback,
+  useWindowDimensions,
 } from 'react-native';
 import SvgCloseLight from '../../assets/closeLight';
 import SvgHeart from '../../assets/heart';
@@ -132,10 +133,10 @@ const FullPostScreen = ({ image, onClose }) => {
     }
     setHangerModal(!hangerModal);
   };
-
+  const { sheight, swidth } = useWindowDimensions();
   return (
     <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, sheight,swidth }}>
         <Animated.ScrollView
           contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
