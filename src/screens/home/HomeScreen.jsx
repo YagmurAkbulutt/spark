@@ -18,7 +18,9 @@ import HomeSkeleton from '../../components/Home/HomeSkeleton';
 import Header from '../../components/Home/Header';
 import FullPostScreen from './FullPostScreen';
 import Loader from '../../components/Loader';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { getUserInfo } from '../../redux/actions/userActions';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const getImageSize = async image => {
   return {
@@ -28,6 +30,8 @@ const getImageSize = async image => {
 };
 
 const HomeScreen = () => {
+  const {isLogin}=useSelector(state=>state.auth)
+  const dispatch=useDispatch()
   const [formattedImages, setFormattedImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -73,6 +77,15 @@ const HomeScreen = () => {
   useEffect(() => {
     loadImages();
   }, []);
+  const getToken=async ()=>{
+    const token =await AsyncStorage.getItem("token")
+    console.log("tokenim",token)
+  }
+
+useEffect(() => {
+  getToken()
+isLogin && dispatch(getUserInfo({}))
+}, [isLogin])
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -131,7 +144,7 @@ const HomeScreen = () => {
       setSelectedImage(null);
     }
   
-    setPreviousScrollY(contentOffsetY); // Son kaydırma konumunu güncelle
+    setPreviousScrollY(contentOffsetY); 
   };
   
 
@@ -209,7 +222,7 @@ const HomeScreen = () => {
       </>
       {selectedImage && (
        <Modal
-       key={selectedImage?.id || "default"}  // 🔴 Yeni resimde tamamen yeniden oluştur
+       key={selectedImage?.id || "default"}  
        visible={!!selectedImage}
        animationType="slide"
        onRequestClose={handleCloseModal}

@@ -4,6 +4,10 @@ import { LogBox } from "react-native";
 import store from "./src/redux/store"; 
 import AppNavigator from "./src/router/AppNavigator"; 
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect } from "react";
+import { fetchFollowers, fetchFollowing } from "./src/redux/slices/followSlice";
+import { setUserProfile } from "./src/redux/slices/authSlice";
+
 
 LogBox.ignoreAllLogs(); 
 
@@ -16,11 +20,4 @@ const App = () => {
     </Provider>
   );
 };
-
- 
-
 export default App;
-
-
-
-

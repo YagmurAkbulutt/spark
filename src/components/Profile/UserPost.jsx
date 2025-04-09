@@ -26,9 +26,13 @@ import {height, width} from '../../utils/helpers';
 import { useDispatch, useSelector } from 'react-redux';
 import { addLike, removeLike } from '../../redux/slices/likesSlice';
 import { savePost, unsavePost } from '../../redux/slices/savedPostSlice';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
-const FullPostScreen = ({ image, onClose }) => {
+const UserPost = ({  onClose }) => {
   const dispatch = useDispatch();
+  const navigation = useNavigation()
+  const route = useRoute();
+  const { image, item } = route.params;
 
   const likesCount = useSelector((state) => state.likes.likesCount);
   const commentsCount = useSelector((state) => state.comments.commentsCount);
@@ -49,10 +53,18 @@ const FullPostScreen = ({ image, onClose }) => {
   const userId = 1; 
   const commentCount = useSelector((state) => state.comments.commentCount);
   const savedCounts = useSelector(state => state.savedPosts.savedCounts);
-  const isSaved = savedPosts.includes(image?.id);
-  const saveCount = savedCounts[image?.id] || 0;
+  const isSaved = savedPosts.includes(item.id);
+const saveCount = savedCounts[item.id] || 0;
 
 
+const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      navigation.goBack();
+    }
+  };
+  
 
   const handleLike = () => {
     if (likedBy.includes(userId)) {
@@ -95,30 +107,30 @@ const FullPostScreen = ({ image, onClose }) => {
     
 
  
-  useEffect(() => {
-    const listener = scrollY.addListener(({ value }) => {
-      if (value < -150) {
-        Animated.parallel([
-          Animated.timing(fadeAnim, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(translateY, {
-            toValue: -500,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-        ]).start(() => {
-          onClose();
-        });
-      }
-    });
+//   useEffect(() => {
+//     const listener = scrollY.addListener(({ value }) => {
+//       if (value < -150) {
+//         Animated.parallel([
+//           Animated.timing(fadeAnim, {
+//             toValue: 0,
+//             duration: 300,
+//             useNativeDriver: true,
+//           }),
+//           Animated.timing(translateY, {
+//             toValue: -500,
+//             duration: 300,
+//             useNativeDriver: true,
+//           }),
+//         ]).start(() => {
+//           onClose();
+//         });
+//       }
+//     });
 
-    return () => {
-      scrollY.removeListener(listener);
-    };
-  }, [scrollY, fadeAnim, translateY, onClose]);
+//     return () => {
+//       scrollY.removeListener(listener);
+//     };
+//   }, [scrollY, fadeAnim, translateY, onClose]);
 
   const onScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -157,7 +169,7 @@ const FullPostScreen = ({ image, onClose }) => {
             />
 
             {/* Fotoğraf */}
-            <Image source={{ uri: image?.uri }} style={styles.image} />
+            <Image source={image} style={styles.image} />
 
             {/* Alt Gölge */}
             <LinearGradient
@@ -166,7 +178,7 @@ const FullPostScreen = ({ image, onClose }) => {
             />
           </Animated.View>
 
-          <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+          <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
             <SvgCloseLight />
           </TouchableOpacity>
 
@@ -255,12 +267,12 @@ const FullPostScreen = ({ image, onClose }) => {
 
             <View style={styles.title}>
               <Text style={styles.username}>
-                @<Text style={styles.boldUsername}>{image?.username}</Text>
+                @<Text style={styles.boldUsername}>{item?.username}</Text>
               </Text>
               <Text style={styles.caption}>
-                {image?.description}
-                {Array.isArray(image?.tags) && image?.tags.length > 0
-                  ? image?.tags.map((tag, index) => (
+                {item?.description}
+                {Array.isArray(item?.tags) && item?.tags.length > 0
+                  ? item?.tags.map((tag, index) => (
                       <Text key={index} style={styles.hashtag}>
                         {tag}{' '}
                       </Text>
@@ -276,7 +288,7 @@ const FullPostScreen = ({ image, onClose }) => {
   );
 };
 
-export default FullPostScreen;
+export default UserPost;
 
 const styles = StyleSheet.create({
   container: {

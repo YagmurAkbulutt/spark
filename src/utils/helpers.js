@@ -562,53 +562,101 @@ export const commentsData = [
 
 export const post = [
   {
-    id:1,
-    postPhoto: require("../assets/entry-1.png")
+    id: 99,
+    postPhoto: require("../assets/entry-1.png"),
+    username: "user_99",
+    description: "Harika bir gün! 🌞",
+    tags: ["#happy", "#sunshine"],
+    images: [require("../assets/entry-1.png")]
   },
   {
-    id:2,
-    postPhoto: require("../assets/entry-2.png")
+    id: 88,
+    postPhoto: require("../assets/entry-2.png"),
+    username: "user_88",
+    description: "Yeni tasarımım 🎨",
+    tags: ["#design", "#art"],
+    images: [require("../assets/entry-2.png")]
   },
   {
-    id:3,
-    postPhoto: require("../assets/entry-3.png")
+    id: 77,
+    postPhoto: require("../assets/entry-3.png"),
+    username: "user_77",
+    description: "Doğa harikası 🌿",
+    tags: ["#nature", "#green"],
+    images: [require("../assets/entry-3.png")]
   },
   {
-    id:4,
-    postPhoto: require("../assets/entry-4.png")
+    id: 66,
+    postPhoto: require("../assets/entry-4.png"),
+    username: "user_66",
+    description: "Şehir manzarası 🏙️",
+    tags: ["#city", "#view"],
+    images: [require("../assets/entry-4.png")]
   },
   {
-    id:5,
-    postPhoto: require("../assets/entry-1.png")
+    id: 55,
+    postPhoto: require("../assets/entry-1.png"),
+    username: "user_55",
+    description: "Tekrar deniyorum ✨",
+    tags: ["#retry", "#shine"],
+    images: [require("../assets/entry-1.png")]
   },
   {
-    id:6,
-    postPhoto: require("../assets/entry-2.png")
+    id: 4,
+    postPhoto: require("../assets/entry-2.png"),
+    username: "user_4",
+    description: "Sanat eseri gibi 🖼️",
+    tags: ["#artwork", "#frame"],
+    images: [require("../assets/entry-2.png")]
   },
   {
-    id:7,
-    postPhoto: require("../assets/entry-3.png")
+    id: 33,
+    postPhoto: require("../assets/entry-3.png"),
+    username: "user_33",
+    description: "Huzur dolu 🍃",
+    tags: ["#peace", "#calm"],
+    images: [require("../assets/entry-3.png")]
   },
   {
-    id:8,
-    postPhoto: require("../assets/entry-4.png")
+    id: 22,
+    postPhoto: require("../assets/entry-4.png"),
+    username: "user_22",
+    description: "Mimari detay 🏛️",
+    tags: ["#architecture", "#detail"],
+    images: [require("../assets/entry-4.png")]
   },
   {
-    id:9,
-    postPhoto: require("../assets/entry-1.png")
+    id: 54,
+    postPhoto: require("../assets/entry-1.png"),
+    username: "user_54",
+    description: "Güne başlarken ☕",
+    tags: ["#morning", "#coffee"],
+    images: [require("../assets/entry-1.png")]
   },
   {
-    id:10,
-    postPhoto: require("../assets/entry-2.png")
+    id: 23,
+    postPhoto: require("../assets/entry-2.png"),
+    username: "user_23",
+    description: "Renk denemeleri 🎨",
+    tags: ["#colors", "#experiment"],
+    images: [require("../assets/entry-2.png")]
   },
   {
-    id:11,
-    postPhoto: require("../assets/entry-3.png")
+    id: 76,
+    postPhoto: require("../assets/entry-3.png"),
+    username: "user_76",
+    description: "Sakin köşem 📚",
+    tags: ["#quiet", "#reading"],
+    images: [require("../assets/entry-3.png")]
   },
   {
-    id:12,
-    postPhoto: require("../assets/entry-4.png")
-  },
+    id: 98,
+    postPhoto: require("../assets/entry-4.png"),
+    username: "user_98",
+    description: "Gece ışıkları 🌃",
+    tags: ["#night", "#lights"],
+    images: [require("../assets/entry-4.png")]
+  }
 ]
 
 export const style = [

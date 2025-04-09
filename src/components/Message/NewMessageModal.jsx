@@ -18,22 +18,20 @@ import {useEffect, useRef, useState} from 'react';
 import {height, messageList, width} from '../../utils/helpers';
 
 const NewMessageModal = ({modalVisible, setModalVisible}) => {
-  const [searchText, setSearchText] = useState(''); // Arama metni
+  const [searchText, setSearchText] = useState(''); 
 
-  const [filteredUsers, setFilteredUsers] = useState(messageList); // Filtrelenmiş kullanıcılar
+  const [filteredUsers, setFilteredUsers] = useState(messageList); 
   const [selectedUsers, setSelectedUsers] = useState([]);
   const hasSelectedUsers = selectedUsers.length > 1;
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const animatedHeight = useRef(new Animated.Value(height * 0.85)).current; // Başlangıç yüksekliği
+  const animatedHeight = useRef(new Animated.Value(height * 0.85)).current; 
 
   useEffect(() => {
     const keyboardShowListener = Keyboard.addListener("keyboardDidShow", (event) => {
       const Modalheight = event.endCoordinates.height;
       setKeyboardHeight(Modalheight);
       
-
-      // Modal yüksekliğini yumuşak bir geçişle değiştir
       Animated.timing(animatedHeight, {
         toValue: height * 0.85 - Modalheight, 
         duration: 100, 
@@ -59,10 +57,11 @@ const NewMessageModal = ({modalVisible, setModalVisible}) => {
       keyboardHideListener.remove();
     };
   }, []);
-  // Arama metni değiştikçe filtreleme yap
+
+
   useEffect(() => {
     if (searchText.trim() === '') {
-      setFilteredUsers(messageList); // Eğer arama metni boşsa tüm kullanıcıları göster
+      setFilteredUsers(messageList); 
     } else {
       const filtered = messageList.filter(user =>
         user.username.toLowerCase().includes(searchText.toLowerCase()),
@@ -75,8 +74,8 @@ const NewMessageModal = ({modalVisible, setModalVisible}) => {
     setSelectedUsers(
       prevSelected =>
         prevSelected.includes(userId)
-          ? prevSelected.filter(id => id !== userId) // Seçiliyse çıkar
-          : [...prevSelected, userId], // Seçili değilse ekle
+          ? prevSelected.filter(id => id !== userId) 
+          : [...prevSelected, userId], 
     );
   };
   return (
@@ -144,21 +143,23 @@ const NewMessageModal = ({modalVisible, setModalVisible}) => {
               const isSelected = selectedUsers.includes(item.id);
               return (
                 <TouchableOpacity
-                  style={[
-                    styles.userItem,
-                    isSelected && styles.selectedUserItem,
-                  ]}
-                  onPress={() => toggleUserSelection(item.id)}
-                  activeOpacity={0.7}>
-                  <View
-                    style={[
-                      styles.userImageWrapper,
-                      isSelected && styles.selectedImageWrapper,
-                    ]}>
-                    <Image source={item.userImage} style={styles.userImage} />
-                  </View>
-                  <Text style={styles.username}>{item.username}</Text>
-                </TouchableOpacity>
+  style={styles.userItem}
+  onPress={() => toggleUserSelection(item.id)}
+  activeOpacity={0.7}>
+  
+  <View style={styles.userImageContainer}>
+    <View style={styles.userImageWrapper}>
+      <Image source={item.userImage} style={styles.userImage} />
+    </View>
+    <View style={[
+      styles.borderOverlay,
+      isSelected && styles.selectedBorderOverlay
+    ]} />
+    {isSelected && <View style={styles.shadowOverlay} />}
+  </View>
+  
+  <Text style={styles.username}>{item.username}</Text>
+</TouchableOpacity>
               );
             }}
           />
@@ -186,31 +187,57 @@ const styles = StyleSheet.create({
   selectedUserItem: {
     padding: 5,
   },
-  userImageWrapper: {
-    borderRadius: 50,
-    overflow: 'hidden',
-    borderWidth: 3, // Her zaman border olsun
-    borderColor: 'transparent', // Varsayılan olarak görünmez
+  userItem: {
+    alignItems: 'center',
+    justifyContent: "center",
+    marginBottom: 15,
+    width: width * 0.30,
   },
-  selectedImageWrapper: {
-    backgroundColor: '#D134AA33', 
-    borderWidth: 3,
-    borderColor: '#D134AA',
-    borderRadius: 50,
+  userImageContainer: {
+    width: 84,  
+    height: 84, 
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  userImageWrapper: {
+    width: 78,
+    height: 78,
+    borderRadius: 39,
+    overflow: 'hidden',
   },
   userImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    borderWidth: 3, // Her zaman border olsun
-    borderColor: 'transparent', // Varsayılan olarak görünmez
+    width: '100%',
+    height: '100%',
+  },
+  borderOverlay: {
+    position: 'absolute',
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+  },
+  selectedBorderOverlay: {
+    borderColor: '#D134AA',
+  },
+  shadowOverlay: {
+    position: 'absolute',
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    backgroundColor: '#D134AA33',
+    shadowColor: '#D134AA',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 8,
   },
   username: {
     marginTop: 5,
     fontSize: 14,
     color: '#000',
   },
-  
   title: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -268,13 +295,6 @@ const styles = StyleSheet.create({
     justifyContent:"center",
     marginBottom: 15,
     width: width * 0.30
-  },
-  userImage: {
-    width: 78,
-    height: 78,
-    borderRadius: 45,
-    // borderWidth: 2,
-    // borderColor: '#ccc',
   },
   username: {
     marginTop: 6,

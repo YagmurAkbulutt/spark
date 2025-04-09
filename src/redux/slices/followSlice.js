@@ -26,7 +26,7 @@ const handleRejected = (state, action) => {
   });
 };
 
-// Async Thunk'lar
+// takipçileri görüntüleme
 export const fetchFollowers = createAsyncThunk(
   "follow/fetchFollowers",
   async (userId, { rejectWithValue }) => {
@@ -39,7 +39,7 @@ export const fetchFollowers = createAsyncThunk(
     }
   }
 );
-
+// takip edilenleri görüntüleme
 export const fetchFollowing = createAsyncThunk(
   "follow/fetchFollowing",
   async (userId, { rejectWithValue }) => {

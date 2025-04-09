@@ -11,17 +11,20 @@ import {
 import SvgDown from '../../assets/down';
 import SvgMenu from '../../assets/hamburgerMenu';
 import SvgDot from '../../assets/dot';
-import {ScrollView} from 'react-native-gesture-handler';
+import {ScrollView, TextInput} from 'react-native-gesture-handler';
 import {height, users, width} from '../../utils/helpers';
 import SearchProfileDetail from '../../components/Search/SearchProfileDetail';
 import SvgBack from '../../assets/back';
 import {launchImageLibrary} from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice';
+import ProfileEdit from '../../components/Profile/ProfileEdit';
+import { userLogout } from '../../redux/actions/authActions';
+import { profileUpdate } from '../../redux/actions/userActions';
 
-const ProfileScreen = ({user, closeModal}) => {
+const ProfileScreen = ({ closeModal}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [imageUri, setImageUri] = useState(null);
   // Android için galeri izni isteme
@@ -44,31 +47,60 @@ const ProfileScreen = ({user, closeModal}) => {
         return;
       }
       if (response.assets && response.assets.length > 0) {
-        setImageUri(response.assets[0].uri); // URI'yi state'e ata
+        setImageUri(response.assets[0].uri); 
       }
     });
   };
 
-  const [isMenuVisible, setIsMenuVisible] = useState(false); // Menü açık mı?
+  const { 
+    userInfo,
+  } = useSelector((state) => state.user);
+  
+  // TextInput'lar için yerel state'ler
+  const [fullName, setFullName] = useState(userInfo.fullName || '');
+  const [username, setUsername] = useState(userInfo.username || '');
+  const [bio, setBio] = useState(userInfo.bio || '');
+  const [selectedImage, setSelectedImage] = useState(null);
+
+   // Profil güncelleme fonksiyonu
+   const handleSave = async () => {
+    try {
+      const formData = new FormData();
+      
+      if (fullName) formData.append('fullName', fullName);
+      if (username) formData.append('username', username);
+      if (bio) formData.append('bio', bio);
+      if (selectedImage) {
+        formData.append('profilePicture', {
+          uri: selectedImage.uri,
+          type: selectedImage.type || 'image/jpeg',
+          name: selectedImage.fileName || 'profile.jpg',
+        });
+      }
+
+      await dispatch(profileUpdate(formData)).unwrap();
+      console.log("güncellenen veriler", formData)
+      
+      setModalVisible(false);
+    } catch (error) {
+      console.error('Güncelleme hatası:', error);
+    }
+  };
+
+
+
+  const [isMenuVisible, setIsMenuVisible] = useState(false); 
   const navigation = useNavigation();
   const dispatch = useDispatch()
 
   const handleLogout = async () => {
     try {
-      console.log("Çıkış işlemi başlatıldı...");
-      dispatch(logout()); // Redux state güncelle
-      setIsMenuVisible(false);
-      console.log("Kullanıcı çıkış yaptı. SignIn ekranına yönlendiriliyor...");
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "SignIn" }],
-      });
+      await dispatch(userLogout()).unwrap();
+      navigation.navigate('Entry');
     } catch (error) {
-      console.error("Çıkış sırasında hata oluştu:", error);
+      console.error('Çıkış hatası:', error);
     }
   };
-  
-  
   
   
   return (
@@ -78,7 +110,7 @@ const ProfileScreen = ({user, closeModal}) => {
         showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <TouchableOpacity onPress={closeModal} style={styles.headerCont}>
-            <Text style={styles.username}>bengsel</Text>
+            <Text style={styles.username}>{userInfo.username}</Text>
             <SvgDown />
           </TouchableOpacity>
 
@@ -98,16 +130,16 @@ const ProfileScreen = ({user, closeModal}) => {
           <View>
             <Image
               style={styles.userImage}
-              source={require('../../assets/profilePhoto.png')}
+              source={{ uri: userInfo.profilePicture }}
             />
           </View>
 
           <View style={styles.userInfo}>
-            <Text style={styles.username}>Bengisu Çelebi</Text>
+            <Text style={styles.username}>{userInfo.fullName}</Text>
             <View style={styles.follow}>
-              <Text style={styles.followCountText}>458 takipçi</Text>
-              <SvgDot />
-              <Text style={styles.followCountText}>764 takip</Text>
+            <Text style={styles.followCountText}>{userInfo.followerCount} takipçi</Text>
+      <SvgDot />
+      <Text style={styles.followCountText}>{userInfo.followingCount} takip</Text>
             </View>
 
             <View style={styles.followBtn}>
@@ -124,75 +156,34 @@ const ProfileScreen = ({user, closeModal}) => {
         </View>
 
         <Text style={styles.userBio}>
-          It is a long established fact that a reader will be distracted by the
-          readable content of a page when looking at its layout.
+          {userInfo.bio}
         </Text>
 
         <SearchProfileDetail />
+        
       </ScrollView>
 
       {/* Fullscreen Modal */}
-      <Modal
-        animationType="slide"
-        transparent={false}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}>
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity
-              onPress={() => setModalVisible(false)}
-              activeOpacity={0.7}
-              style={styles.closeButton}>
-              <SvgBack style={styles.closeBtn} />
-            </TouchableOpacity>
-            <View style={styles.modalheaderCont}>
-              <Text style={styles.headerText}>Profili düzenle</Text>
-            </View>
-          </View>
-
-          {/* Profil düzenleme içeriklerini buraya ekleyebilirsin */}
-          <View style={styles.modalContent}>
-            <View style={styles.updateImage}>
-              <View style={styles.imageWrapper}>
-                <Image
-                  source={
-                    imageUri
-                      ? {uri: imageUri}
-                      : require('../../assets/profilePhoto.png')
-                  }
-                  style={styles.profileImage}
-                />
-              </View>
-              <TouchableOpacity onPress={selectImage}>
-                <Text style={styles.updatePhotoText}>Fotoğrafı değiştir</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.updateContainer}>
-              <View style={styles.infoUpdate}>
-                <Text style={styles.updateText}>Adı</Text>
-                <Text style={styles.updText}>Mine Aladağ</Text>
-              </View>
-              <View style={styles.infoUpdate}>
-                <Text style={styles.updateText}>Kullanıcı Adı</Text>
-                <Text style={styles.updText}>minealada</Text>
-              </View>
-              <View style={styles.infoUpdate}>
-                <Text style={styles.updateText}>Biyografi</Text>
-                <TouchableOpacity>
-                  <Text style={styles.updText}>Biyografi ekle</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.infoUpdate}>
-                <Text style={styles.updateText}>Bağlantılar</Text>
-                <TouchableOpacity>
-                  <Text style={styles.updText}>Bağlantı ekle</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </SafeAreaView>
-      </Modal>
+       {/* Modal */}
+       <ProfileEdit
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+        // userPhoto={userPhoto}
+        // fullName={fullName}
+        // setFullName={setFullName}
+        // username={username}
+        userInfo={userInfo}
+        selectImage={selectImage}
+        handleSave={handleSave}
+        formData={{
+          fullName,
+          setFullName,
+          username,
+          setUsername,
+          bio,
+          setBio
+        }}
+      />
     </View>
   );
 };
@@ -233,6 +224,7 @@ backgroundColor:"#FFFFFF"
   userImage: {
     width: width * 0.26,
     height: width * 0.26,
+    borderRadius:60
   },
   userInfo: {
     marginLeft: 20,
@@ -362,7 +354,7 @@ backgroundColor:"#FFFFFF"
   },
   logoutButton: {
     position: "absolute",
-    top: 40, // SvgMenu'nun altına konumlandır
+    top: 40,
     right: 0,
     backgroundColor: "#f44336",
     padding: 10,
@@ -371,5 +363,27 @@ backgroundColor:"#FFFFFF"
   logoutText: {
     color: "white",
     fontWeight: "bold",
+  },
+  saveButton: {
+    backgroundColor: "#000000",
+    height: height * 0.05,
+    marginHorizontal: 23,
+    borderRadius: 4,
+    marginTop: 10,
+    justifyContent: "center", 
+    alignItems: "center", 
+  },
+  
+  saveButtonText: {
+    color: "#FFFFFF",
+    textAlign: "center",
+    fontSize: 16,
+  },
+  updText: {
+    fontSize: 16,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
   },
 });

@@ -12,7 +12,7 @@ import Collections from "../Home/Collections";
 
 const SearchProfileDetail = () => {
   const [activeTab, setActiveTab] = useState("post");
-  console.log("Active Tab:", activeTab);
+  
   const renderContent = () => {
     switch (activeTab) {
       case "post":

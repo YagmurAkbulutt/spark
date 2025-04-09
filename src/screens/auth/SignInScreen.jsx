@@ -12,154 +12,121 @@ import SvgLogoS from '../../assets/logo-s';
 import SvgEyeOff from '../../assets/eyeoff';
 import {useEffect, useState} from 'react';
 import {dismissKeyboard, height, width} from '../../utils/helpers';
-import { useDispatch, useSelector } from 'react-redux';
-import { loginUser } from '../../redux/slices/authSlice';
+import {useDispatch, useSelector} from 'react-redux';
+import {loginUser, setUserProfile} from '../../redux/slices/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { userLogin } from '../../redux/actions/authActions';
 
-const SignInScreen = ({ navigation }) => {
+const SignInScreen = ({navigation}) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [focusedInput, setFocusedInput] = useState(null);
-  const [identifier, setIdentifier] = useState(""); 
+  const [identifier, setIdentifier] = useState('de@gmail.com');
 
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState('123456');
 
   const dispatch = useDispatch();
-  const { isLoading, error } = useSelector((state) => state.auth); 
+  const {isLoading, error} = useSelector(state => state.auth);
 
-  useEffect(() => {
-    const checkLoginStatus = async () => {
-      try {
-        const isLoggedIn = await AsyncStorage.getItem("isLoggedIn");
-        const userToken = await AsyncStorage.getItem("userToken"); // Örnek: token saklama
-        
-        if (isLoggedIn === "true" && userToken) {
-          // Redux state'ini güncelle (eğer gerekliyse)
-          // Örneğin: dispatch(setAuthToken(userToken));
-          navigation.replace("Main");
-        }
-      } catch (error) {
-        console.error("Login status check failed:", error);
-      }
-    };
-    
-    checkLoginStatus();
-  }, []);
 
-  const handleLogin = async () => {
+  const handleLogin =  () => {
     if (!identifier || !password) {
-      alert("Lütfen kullanıcı adı/e-posta ve şifrenizi girin.");
-      return;
-    }
-
-    try {
-      const resultAction = await dispatch(loginUser({ identifier, password }));
-      
-      if (loginUser.fulfilled.match(resultAction)) {
-        // Giriş başarılıysa daha fazla veri sakla
-        await AsyncStorage.multiSet([
-          ["isLoggedIn", "true"],
-          ["userToken", resultAction.payload.token], 
-          ["username", identifier] 
-        ]);
-        navigation.navigate("Main");
-      }
-    } catch (error) {
-      console.error("Giriş hatası:", error);
+      alert('Lütfen kullanıcı adı/e-posta ve şifrenizi girin.');
+    } else {
+     dispatch(userLogin({
+      identifier:identifier,
+      password:password
+     }))
     }
   };
 
   return (
     <TouchableWithoutFeedback onPress={dismissKeyboard}>
-    <View style={styles.container}>
-      <View style={{gap: 13}}>
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          <SvgLogoS width={width * 0.2} height={width * 0.2} />
-        </View>
-
-        {/* Giriş Alanları */}
-        <View style={styles.inputContainer}>
-          {/* Kullanıcı adı veya e-posta */}
-          <View
-  style={[
-    styles.textInputContainer,
-    focusedInput === 'username' && styles.focusedInput,
-  ]}>
-  <TextInput
-    placeholder="Kullanıcı adı veya e-posta"
-    placeholderTextColor="#B9B9B9"
-    style={styles.textInput}
-    selectionColor='#D134AA'
-    onFocus={() => setFocusedInput('username')}
-    onBlur={() => setFocusedInput(null)}
-    value={identifier} 
-    onChangeText={(text) => {
-      setIdentifier(text); 
-    }}
-    autoCapitalize="none"
-  />
-</View>
-
-
-          {/* Şifre Girişi ve Göz İkonu */}
-          <View
-            style={[
-              styles.passwordContainer,
-              focusedInput === 'password' && styles.focusedInput,
-            ]}>
-            <TextInput
-              placeholder="Şifre"
-              placeholderTextColor="#B9B9B9"
-              style={styles.textInputPassword}
-              secureTextEntry={!isPasswordVisible}
-              selectionColor='#D134AA'
-              onFocus={() => setFocusedInput('password')}
-              onBlur={() => setFocusedInput(null)}
-              value={password}
-              onChangeText={setPassword}
-            />
-            <TouchableOpacity
-              onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-              style={styles.eyeIcon}>
-              {isPasswordVisible ? (
-                <SvgEyeOff width={24} height={24} />
-              ) : (
-                <SvgEyeOff width={24} height={24} />
-              )}
-            </TouchableOpacity>
+      <View style={styles.container}>
+        <View style={{gap: 13}}>
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <SvgLogoS width={width * 0.2} height={width * 0.2} />
           </View>
+
+          {/* Giriş Alanları */}
+          <View style={styles.inputContainer}>
+            {/* Kullanıcı adı veya e-posta */}
+            <View
+              style={[
+                styles.textInputContainer,
+                focusedInput === 'username' && styles.focusedInput,
+              ]}>
+              <TextInput
+                placeholder="Kullanıcı adı veya e-posta"
+                placeholderTextColor="#B9B9B9"
+                style={styles.textInput}
+                selectionColor="#D134AA"
+                onFocus={() => setFocusedInput('username')}
+                onBlur={() => setFocusedInput(null)}
+                value={identifier}
+                onChangeText={text => {
+                  setIdentifier(text);
+                }}
+                autoCapitalize="none"
+              />
+            </View>
+            {/* Şifre Girişi ve Göz İkonu */}
+            <View
+              style={[
+                styles.passwordContainer,
+                focusedInput === 'password' && styles.focusedInput,
+              ]}>
+              <TextInput
+                placeholder="Şifre"
+                placeholderTextColor="#B9B9B9"
+                style={styles.textInputPassword}
+                secureTextEntry={!isPasswordVisible}
+                selectionColor="#D134AA"
+                onFocus={() => setFocusedInput('password')}
+                onBlur={() => setFocusedInput(null)}
+                value={password}
+                onChangeText={setPassword}
+              />
+              <TouchableOpacity
+                onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                style={styles.eyeIcon}>
+                {isPasswordVisible ? (
+                  <SvgEyeOff width={24} height={24} />
+                ) : (
+                  <SvgEyeOff width={24} height={24} />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Şifremi Unuttum */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ForgetPassword')}
+            style={styles.forgotPasswordContainer}>
+            <Text style={styles.forgotPasswordText}>Şifreni mi unuttun?</Text>
+          </TouchableOpacity>
+
+          {/* Giriş Yap Butonu */}
+          <TouchableOpacity onPress={handleLogin} style={styles.loginButton}>
+            {isLoading ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Text style={styles.loginButtonText}>Giriş Yap</Text>
+            )}
+          </TouchableOpacity>
         </View>
 
-        {/* Şifremi Unuttum */}
-        <TouchableOpacity
-          onPress={() => navigation.navigate('ForgetPassword')}
-          style={styles.forgotPasswordContainer}>
-          <Text style={styles.forgotPasswordText}>Şifreni mi unuttun?</Text>
-        </TouchableOpacity>
-
-
-{/* Giriş Yap Butonu */}
-<TouchableOpacity onPress={handleLogin} style={styles.loginButton}>
-  {isLoading ? (
-    <ActivityIndicator color="#FFF" />
-  ) : (
-    <Text style={styles.loginButtonText}>Giriş Yap</Text>
-  )}
-</TouchableOpacity>
+        {/* Kayıt Ol */}
+        <View style={styles.registerContainer}>
+          <Text style={styles.registerText}>Hesabın yok mu? </Text>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('SignUp')}
+            style={styles.registerButton}>
+            <Text style={styles.registerLink}>Kaydol</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-
-      {/* Kayıt Ol */}
-      <View style={styles.registerContainer}>
-        <Text style={styles.registerText}>Hesabın yok mu? </Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('SignUp')}
-          style={styles.registerButton}>
-          <Text style={styles.registerLink}>Kaydol</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </TouchableWithoutFeedback>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -171,7 +138,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: width * 0.05,
-    backgroundColor:"#FFFFFF"
+    backgroundColor: '#FFFFFF',
   },
   logoContainer: {
     justifyContent: 'center',

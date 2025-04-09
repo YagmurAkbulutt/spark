@@ -75,7 +75,7 @@ dispatch(addPost(newPost));
               style={styles.firstInput}
               placeholder="Bir başlık ekleyin"
               placeholderTextColor="#000000"
-              pla
+              
             />
             <TextInput
               style={styles.secondInput}
