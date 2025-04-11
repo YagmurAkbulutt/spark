@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { messageList, users, width } from '../../utils/helpers';
 import SearchPeople from './SearchPeople';
 import { useDispatch, useSelector } from 'react-redux';
-import { searchProfile } from '../../redux/slices/searchProfileSlice';
+import { searchProfile } from '../../redux/actions/searchActions';
+
 
 
 const SearchInput = () => {
@@ -24,7 +25,7 @@ const SearchInput = () => {
         if (searchText.trim() === '') {
             console.log('🚫 Boş sorgu, API çağrısı yapılmayacak.');
         } else {
-            console.log(`📡 API çağrısı yapılıyor: /api/users/search?q=${searchText}`);
+            console.log(`📡 API çağrısı yapılıyor: users/search?q=${searchText}`);
             dispatch(searchProfile(searchText));
         }
     }, [searchText, dispatch]);

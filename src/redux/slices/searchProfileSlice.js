@@ -1,29 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-import api from '../../api/api';
-
-export const searchProfile = createAsyncThunk(
-  'users/searchProfile',
-  async (searchTerm, { rejectWithValue }) => {
-    console.log(`Redux Thunk Başladı: searchProfile("${searchTerm}")`);
-
-    if (!searchTerm.trim()) {
-      console.error('❌ Hata: Arama sorgusu boş olamaz.');
-      return rejectWithValue('Arama sorgusu gereklidir');
-    }
-
-    try {
-      // Use 'query' parameter instead of 'q' to match your backend
-      const response = await api.get(`/api/users/search?query=${encodeURIComponent(searchTerm)}`);
-      console.log('API Yanıtı:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('❌ API Hatası:', error.response?.data || error.message);
-      return rejectWithValue(error.response?.data || 'Bilinmeyen bir hata oluştu');
-    }
-  }
-);
-
+import { createSlice } from '@reduxjs/toolkit';
+import { searchProfile } from '../actions/searchActions';
 
 const searchProfileSlice = createSlice({
   name: 'searchProfile',

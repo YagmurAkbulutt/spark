@@ -1,45 +1,47 @@
-import { createSlice } from "@reduxjs/toolkit";
+import {createSlice} from '@reduxjs/toolkit';
+import {likePost} from '../actions/postActions';
 
-const initialState = {
-  posts: [],
-};
-
-const postSlice = createSlice({
-  name: "posts",
-  initialState,
+const postsSlice = createSlice({
+  name: 'posts',
+  initialState: {
+    posts: [],
+    status: 'idle',
+    error: null,
+  },
   reducers: {
-    addPost: (state, action) => {
-      return { ...state, posts: [...state.posts, action.payload] }; 
+    setPosts: (state, action) => {
+      console.log('[setPosts] Posts yüklendi:', action.payload);
+      state.posts = action.payload;
     },
-      
-    updatePost: (state, action) => {
-      const index = state.posts.findIndex(post => post.id === action.payload.id);
-      if (index !== -1) {
-        state.posts[index] = action.payload;
-      }
-    },
-    deletePost: (state, action) => {
-      state.posts = state.posts.filter(post => post.id !== action.payload);
-    },
+  },
+  extraReducers: builder => {
+    builder
+      .addCase(likePost.pending, state => {
+        console.log('[likePost.pending] İstek gönderiliyor...');
+        state.status = 'loading';
+      })
+      .addCase(likePost.fulfilled, (state, action) => {
+        console.log('[likePost.fulfilled] Yanıt alındı:', action.payload);
+
+        state.status = 'succeeded';
+        const {postId, message} = action.payload;
+
+        const post = state.posts.find(p => p.id === postId);
+        if (post) {
+          post.liked = message === 'Gönderi beğenildi';
+          console.log(
+            `[likePost.fulfilled] Post ${postId} için like durumu:`,
+            post.liked,
+          );
+        }
+      })
+      .addCase(likePost.rejected, (state, action) => {
+        console.error('[likePost.rejected] Hata:', action.payload);
+        state.status = 'failed';
+        state.error = action.payload;
+      });
   },
 });
 
-export const { addPost, updatePost, deletePost } = postSlice.actions;
-export default postSlice.reducer;
-
-// addPost: (state, action) => {
-    //     state.posts.push({
-    //       id: action.payload.id,
-    //       photo: action.payload.photo,
-    //       title: action.payload.title,
-    //       description: action.payload.description,
-    //       category: {
-    //         name: action.payload.category.name,
-    //         brand: action.payload.category.brand,
-    //         color: action.payload.category.color,
-    //       },
-    //       poll: action.payload.poll,
-    //       tags: action.payload.tags,
-    //       mentions: action.payload.mentions,
-    //     });
-    //   },
+export const {setPosts} = postsSlice.actions;
+export default postsSlice.reducer;

@@ -58,14 +58,18 @@ const ProfileInfo = ({
 
           {/* Takip Butonu */}
           <View style={styles.followBtn}>
-            <TouchableOpacity
-              style={[
-                styles.followButton,
-                isFollowingUser ? styles.unfollowButton : null,
-                isLoading ? styles.disabledButton : null,
-              ]}
-              onPress={handleFollowToggle}
-              disabled={isLoading}>
+          <TouchableOpacity
+  style={[
+    styles.followButton,
+    isFollowingUser ? styles.unfollowButton : null,
+    isLoading ? styles.disabledButton : null,
+  ]}
+  onPress={() => {
+    console.log("Butona tıklandı!");
+    handleFollowToggle();
+  }}
+  disabled={isLoading}
+>
               <Text
                 style={[
                   isFollowingUser ? styles.unfollowText : styles.followText,

@@ -4,15 +4,19 @@ import SvgNewMessage from "../../assets/newMessage"
 import { useNavigation } from '@react-navigation/native'
 import { useState } from 'react'
 import NewMessageModal from './NewMessageModal'
+import { useSelector } from 'react-redux'
 
 const Header = () => {
     const navigation = useNavigation()
     const [modalVisible, setModalVisible] = useState(false);
+    const { 
+      userInfo,
+    } = useSelector((state) => state.user);
   return (
     <View style={styles.container}>
       <View style={styles.username}>
         <TouchableOpacity onPress={() => navigation.goBack()}><SvgBack style={{width:24, height:24}}/></TouchableOpacity>
-        <Text style={styles.text}>minealada</Text>
+        <Text style={styles.text}>{userInfo.username}</Text>
       </View>
       <View>
       <TouchableOpacity onPress={() => setModalVisible(true)}

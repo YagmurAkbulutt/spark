@@ -22,10 +22,11 @@ import ShareModal from '../../components/Home/ShareModal';
 import CommentModal from '../../components/Home/CommentModal';
 import CollectionsModal from '../../components/Home/CollectionsModal';
 import HangerModal from '../../components/Home/HangerModal';
-import {height, width} from '../../utils/helpers';
+import {height, post, width} from '../../utils/helpers';
 import { useDispatch, useSelector } from 'react-redux';
 import { addLike, removeLike } from '../../redux/slices/likesSlice';
 import { savePost, unsavePost } from '../../redux/slices/savedPostSlice';
+import { likePost } from '../../redux/actions/postActions';
 
 const FullPostScreen = ({ image, onClose }) => {
   const dispatch = useDispatch();
@@ -33,7 +34,7 @@ const FullPostScreen = ({ image, onClose }) => {
   const likesCount = useSelector((state) => state.likes.likesCount);
   const commentsCount = useSelector((state) => state.comments.commentsCount);
   const savedPosts = useSelector((state) => state.savedPosts.savedPosts);
-  const shareCount = useSelector((state) => state.share.shareCount);
+  // const shareCount = useSelector((state) => state.share.shareCount);
 
   const [scrollY] = useState(new Animated.Value(0));
   const [fadeAnim] = useState(new Animated.Value(1));
@@ -55,11 +56,8 @@ const FullPostScreen = ({ image, onClose }) => {
 
 
   const handleLike = () => {
-    if (likedBy.includes(userId)) {
-      dispatch(removeLike({ userId }));
-    } else {
-      dispatch(addLike({ userId }));
-    }
+    console.log(`[LikeButton] Butona tıklandı. Post ID: ${post.id}`);
+    dispatch(likePost(post.id));
   };
 
   // Yorum butonuna tıklandığında
@@ -211,7 +209,10 @@ const FullPostScreen = ({ image, onClose }) => {
                 <View>
                   <TouchableOpacity style={styles.actionBtn} onPress={handleShare}>
                     <SvgShare />
-                    <Text style={styles.actionText}>{shareCount}</Text>
+                    <Text style={styles.actionText}>
+                      {/* {shareCount} */}
+
+                    </Text>
                   </TouchableOpacity>
                   <ShareModal
                     modalVisible={modalVisible}

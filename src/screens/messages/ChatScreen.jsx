@@ -195,6 +195,7 @@ const ChatScreen = () => {
               onChangeText={setNewMessage}
               style={styles.placeholder}
               placeholder="Mesaj yaz..."
+              selectionColor="#D134AA"
             />
             <TouchableOpacity
               onPress={handleSendMessage}

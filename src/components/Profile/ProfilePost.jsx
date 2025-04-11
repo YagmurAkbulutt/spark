@@ -5,7 +5,6 @@ import { useNavigation } from '@react-navigation/native';
 
 const ProfilePost = () => {
   const navigation = useNavigation();
-  
 
   const getFirstImage = (item) => {
     if (item.postPhoto) return item.postPhoto;
@@ -14,31 +13,32 @@ const ProfilePost = () => {
   };
 
   const handleImagePress = (item) => {
-    navigation.navigate('UserPost', { image: getFirstImage(item), item });
-
+    navigation.navigate('UserPost', { selectedImage: item, allPosts: post });
   };
+
   return (
     <FlatList
-    data={post}
-    keyExtractor={(item) => item.id.toString()}
-    numColumns={3}
-    columnWrapperStyle={styles.columnWrapper}
-    renderItem={({ item }) => {
-      const imageSource = getFirstImage(item);
-      return (
-        imageSource && (
-          <TouchableOpacity activeOpacity={0.7}
-            style={styles.itemContainer}
-            onPress={() => handleImagePress(item)}
-          >
-            <Image source={imageSource} style={styles.image} />
-          </TouchableOpacity>
-        )
-      );
-    }}
-  />
-  )
-}
+      data={post}
+      keyExtractor={(item) => item.id.toString()}
+      numColumns={3}
+      columnWrapperStyle={styles.columnWrapper}
+      renderItem={({ item }) => {
+        const imageSource = getFirstImage(item);
+        return (
+          imageSource && (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={styles.itemContainer}
+              onPress={() => handleImagePress(item)}
+            >
+              <Image source={imageSource} style={styles.image} />
+            </TouchableOpacity>
+          )
+        );
+      }}
+    />
+  );
+};
 
 export default ProfilePost
 

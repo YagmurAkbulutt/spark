@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   commentCount: 0,
-  comments: [], // Yorumlar [{ id, userId, comment }]
+  comments: [],
 };
 
 const commentsSlice = createSlice({
@@ -14,14 +14,12 @@ const commentsSlice = createSlice({
       state.comments = action.payload.comments;
     },
     addComment: (state, action) => {
-      // Yeni yorum eklendiğinde yorum sayısını artırıyoruz
       state.comments.push(action.payload.comment);
-      state.commentCount += 1; // Yorum sayısını artır
+      state.commentCount += 1;
     },
     removeComment: (state, action) => {
-      // Yorum silindiğinde yorum sayısını azaltıyoruz
       state.comments = state.comments.filter(comment => comment.id !== action.payload.commentId);
-      state.commentCount -= 1; // Yorum sayısını azalt
+      state.commentCount -= 1; 
     },
   },
 });

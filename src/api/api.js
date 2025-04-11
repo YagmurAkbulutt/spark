@@ -38,10 +38,15 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const response = await store.dispatch(refreshToken());
-        const newToken = response.payload?.token;
+        // Yeni token al
+        const refreshToken = await AsyncStorage.getItem('refreshToken');
+        const response = await api.post('/auth/refresh-token', { refreshToken });
+        const newToken = response.data.token;
 
         if (newToken) {
+          // AsyncStorage'e yeni token'ı kaydet
+          await AsyncStorage.setItem('token', newToken);
+
           // Yeni token ile isteği tekrarla
           api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
           originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
@@ -49,13 +54,15 @@ api.interceptors.response.use(
         }
       } catch (refreshError) {
         console.error('Token yenileme başarısız:', refreshError);
-        store.dispatch(logout());
+        await AsyncStorage.removeItem('token'); // Token'ı temizle
+        await AsyncStorage.removeItem('refreshToken'); // Refresh token'ı temizle
+        store.dispatch(logout()); // Kullanıcıyı çıkış yap
         return Promise.reject(refreshError);
       }
     }
 
     return Promise.reject(error);
-  },
+  }
 );
 
 export default api;

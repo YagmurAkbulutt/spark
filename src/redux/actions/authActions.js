@@ -14,6 +14,37 @@ const userLogin = createAsyncThunk('auth/userLogin', async payload => {
   }
 });
 
+const userCheck = createAsyncThunk('auth/userCheck', async (_, { rejectWithValue }) => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    
+    if (token) {
+      return true;
+    }
+
+    const refreshToken = await AsyncStorage.getItem('refreshToken');
+    
+    if (!refreshToken) {
+      return false;
+    }
+
+    try {
+      const response = await api.post('/auth/refresh-token', { refreshToken });
+      const newToken = response.data.accessToken;
+      
+      await AsyncStorage.setItem('token', newToken);
+      
+      return true;
+    } catch (refreshError) {
+      await AsyncStorage.removeItem('refreshToken');
+      return false;
+    }
+
+  } catch (error) {
+    return rejectWithValue(error.message);
+  }
+});
+
 const userLogout = createAsyncThunk('auth/userLogout', async () => {
   try {
     await AsyncStorage.removeItem('token');
@@ -24,18 +55,6 @@ const userLogout = createAsyncThunk('auth/userLogout', async () => {
   } catch (error) {
     console.error('Çıkış yapılırken hata:', error);
     throw error; 
-  }
-});
-
-
-const userCheck = createAsyncThunk('auth/userCheck', async () => {
-  try {
-    const token = await AsyncStorage.getItem('token');
-    if (token) {
-      return true;
-    }
-  } catch (error) {
-    return error;
   }
 });
 export {userLogin,userCheck, userLogout};
