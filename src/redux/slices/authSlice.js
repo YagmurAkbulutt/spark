@@ -225,7 +225,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     logout: state => {
-      state.isLoggedIn = false;
+      state.isLogin = false;
       state.userToken = null;
       state.user = null;
       state.refreshToken = null;
@@ -264,9 +264,22 @@ const authSlice = createSlice({
       .addCase(userLogin.pending, state => {
         state.isLoading = true;
       })
+      // .addCase(userLogin.fulfilled, (state, action) => {
+      //   const { user, token, refreshToken } = action.payload; // API'den gelen veriler
+      //   state.user = user; // Kullanıcı bilgilerini kaydet
+      //   state.token = token;
+      //   state.refreshToken = refreshToken || null;
+      //   state.isLoading = false;
+      //   state.isLogin = true;
+      //   state.error = null; // Hata varsa temizle
+      // })
       .addCase(userLogin.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isLogin = true;
+        if (!action.payload?.user || !action.payload?.token) {
+          state.error = 'Incomplete login data';
+          state.isLoading = false;
+          return;
+        }
+        // ... rest of your code
       })
       .addCase(userLogin.rejected, (state, action) => {
         state.error = action.payload;

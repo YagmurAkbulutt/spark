@@ -23,23 +23,29 @@ import { logout } from '../../redux/slices/authSlice';
 import ProfileEdit from '../../components/Profile/ProfileEdit';
 import { userLogout } from '../../redux/actions/authActions';
 import { profileUpdate } from '../../redux/actions/userActions';
+import FollowList from '../../components/Profile/FollowList';
 
-const ProfileScreen = ({ closeModal}) => {
-  const [modalVisible, setModalVisible] = useState(false);
+const ProfileScreen = ({ closeModal }) => {
+  // Ayrı modal state'leri
+  const [editProfileModalVisible, setEditProfileModalVisible] = useState(false);
+  const [followListModalVisible, setFollowListModalVisible] = useState(false);
+  
   const [imageUri, setImageUri] = useState(null);
-  // Android için galeri izni isteme
-  // const requestGalleryPermission = async () => {
-  //   if (Platform.OS === "android") {
-  //     const granted = await PermissionsAndroid.request(
-  //       PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-  //     );
-  //     return granted === PermissionsAndroid.RESULTS.GRANTED;
-  //   }
-  //   return true;
-  // };
+  const { userInfo } = useSelector((state) => state.user);
+  
+  // TextInput'lar için yerel state'ler
+  const [fullName, setFullName] = useState(userInfo.fullName || '');
+  const [username, setUsername] = useState(userInfo.username || '');
+  const [bio, setBio] = useState(userInfo.bio || '');
+  const [selectedImage, setSelectedImage] = useState(null);
 
-  // Galeriden fotoğraf seçme işlemi
-  const selectImage = async () => {
+  const [activeTab, setActiveTab] = useState('followers'); // 'followers' veya 'following'
+  const [isMenuVisible, setIsMenuVisible] = useState(false); 
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+
+   // Galeriden fotoğraf seçme işlemi
+   const selectImage = async () => {
     launchImageLibrary({mediaType: 'photo'}, response => {
       if (response.didCancel) return;
       if (response.errorMessage) {
@@ -52,18 +58,20 @@ const ProfileScreen = ({ closeModal}) => {
     });
   };
 
-  const { 
-    userInfo,
-  } = useSelector((state) => state.user);
-  
-  // TextInput'lar için yerel state'ler
-  const [fullName, setFullName] = useState(userInfo.fullName || '');
-  const [username, setUsername] = useState(userInfo.username || '');
-  const [bio, setBio] = useState(userInfo.bio || '');
-  const [selectedImage, setSelectedImage] = useState(null);
+  // Takipçi listesini aç
+  const openFollowers = () => {
+    setActiveTab('followers');
+    setFollowListModalVisible(true);
+  };
 
-   // Profil güncelleme fonksiyonu
-   const handleSave = async () => {
+  // Takip edilenleri aç
+  const openFollowing = () => {
+    setActiveTab('following');
+    setFollowListModalVisible(true);
+  };
+
+  // Profil güncelleme fonksiyonu
+  const handleSave = async () => {
     try {
       const formData = new FormData();
       
@@ -79,19 +87,11 @@ const ProfileScreen = ({ closeModal}) => {
       }
 
       await dispatch(profileUpdate(formData)).unwrap();
-      console.log("güncellenen veriler", formData)
-      
-      setModalVisible(false);
+      setEditProfileModalVisible(false);
     } catch (error) {
       console.error('Güncelleme hatası:', error);
     }
   };
-
-
-
-  const [isMenuVisible, setIsMenuVisible] = useState(false); 
-  const navigation = useNavigation();
-  const dispatch = useDispatch()
 
   const handleLogout = async () => {
     try {
@@ -101,13 +101,13 @@ const ProfileScreen = ({ closeModal}) => {
       console.error('Çıkış hatası:', error);
     }
   };
-  
-  
+
   return (
     <View style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.Scrollcontainer}
         showsVerticalScrollIndicator={false}>
+        {/* Header kısmı */}
         <View style={styles.header}>
           <TouchableOpacity onPress={closeModal} style={styles.headerCont}>
             <Text style={styles.username}>{userInfo.username}</Text>
@@ -115,17 +115,17 @@ const ProfileScreen = ({ closeModal}) => {
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => setIsMenuVisible(!isMenuVisible)}>
-        <SvgMenu />
-      </TouchableOpacity>
+            <SvgMenu />
+          </TouchableOpacity>
 
-      {/* Menü Açıldığında Görünecek Çıkış Yap Butonu */}
-      {isMenuVisible && (
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Çıkış Yap</Text>
-        </TouchableOpacity>
-      )}
+          {isMenuVisible && (
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+              <Text style={styles.logoutText}>Çıkış Yap</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
+        {/* Profil bilgileri */}
         <View style={styles.profileContainer}>
           <View>
             <Image
@@ -137,15 +137,21 @@ const ProfileScreen = ({ closeModal}) => {
           <View style={styles.userInfo}>
             <Text style={styles.username}>{userInfo.fullName}</Text>
             <View style={styles.follow}>
-            <Text style={styles.followCountText}>{userInfo.followerCount} takipçi</Text>
-      <SvgDot />
-      <Text style={styles.followCountText}>{userInfo.followingCount} takip</Text>
+              <TouchableOpacity onPress={openFollowers}>
+                <Text style={styles.followCountText}>{userInfo.followerCount} takipçi</Text>
+              </TouchableOpacity>
+              
+              <SvgDot />
+              
+              <TouchableOpacity onPress={openFollowing}>
+                <Text style={styles.followCountText}>{userInfo.followingCount} takip</Text>
+              </TouchableOpacity>
             </View>
 
             <View style={styles.followBtn}>
               <TouchableOpacity
                 style={styles.followButton}
-                onPress={() => setModalVisible(true)}>
+                onPress={() => setEditProfileModalVisible(true)}>
                 <Text style={styles.unfollowText}>Profili Düzenle</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.dotContainer} activeOpacity={0.7}>
@@ -155,23 +161,14 @@ const ProfileScreen = ({ closeModal}) => {
           </View>
         </View>
 
-        <Text style={styles.userBio}>
-          {userInfo.bio}
-        </Text>
-
+        <Text style={styles.userBio}>{userInfo.bio}</Text>
         <SearchProfileDetail />
-        
       </ScrollView>
 
-      {/* Fullscreen Modal */}
-       {/* Modal */}
-       <ProfileEdit
-        modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
-        // userPhoto={userPhoto}
-        // fullName={fullName}
-        // setFullName={setFullName}
-        // username={username}
+      {/* Profil Düzenleme Modalı */}
+      <ProfileEdit
+        modalVisible={editProfileModalVisible}
+        setModalVisible={setEditProfileModalVisible}
         userInfo={userInfo}
         selectImage={selectImage}
         handleSave={handleSave}
@@ -184,6 +181,21 @@ const ProfileScreen = ({ closeModal}) => {
           setBio
         }}
       />
+
+      {/* Takipçi/Takip Edilenler Listesi Modalı */}
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={followListModalVisible}
+        onRequestClose={() => setFollowListModalVisible(false)}
+        style={{marginTop:100}}
+      >
+        <FollowList 
+          activeTab={activeTab} 
+          userId={userInfo.id} 
+          onClose={() => setFollowListModalVisible(false)} 
+        />
+      </Modal>
     </View>
   );
 };

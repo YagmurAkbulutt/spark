@@ -41,6 +41,7 @@ const SearchPeople = ({ filteredUsers }) => {
     loadSavedUsers();
   }, []);
   
+  const navigation = useNavigation(); // Eğer bu bir bileşense, useNavigation hook'unu ekleyin
 
   // Kullanıcı seçildiğinde çalışacak fonksiyon
   const handleSelectUser = async (user) => {
@@ -71,6 +72,7 @@ const SearchPeople = ({ filteredUsers }) => {
     } catch (error) {
       console.error('Kullanıcı eklenirken hata:', error);
     }
+    navigation.navigate('SearchProfile', { user });
   };
   
 
@@ -132,7 +134,7 @@ const SearchPeople = ({ filteredUsers }) => {
       />
 
       
-      <Modal
+      {/* <Modal
         animationType="none"
         transparent={true}
         visible={modalVisible}
@@ -146,7 +148,7 @@ const SearchPeople = ({ filteredUsers }) => {
       <SearchProfile user={selectedUser} closeModal={() => setModalVisible(false)} />
     </View>
   </View>
-      </Modal>
+      </Modal> */}
     </View>
   );
 };

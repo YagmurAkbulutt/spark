@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/api";
+import Config from "react-native-config";
 
 // Helper fonksiyonlar
 const handlePending = (state) => {
@@ -48,15 +49,55 @@ export const isUserFollowing = (following, targetUserId) => {
 };
 
 // Async Thunk'lar
+// export const fetchFollowers = createAsyncThunk(
+//   "follow/fetchFollowers",
+//   async (userId, { rejectWithValue }) => {
+//     try {
+//       if (!userId) throw new Error("Kullanıcı ID'si geçersiz");
+//       console.log("Takipçiler getiriliyor, userId:", userId);
+//       const response = await api.get(`follow/users/${userId}/followers`);
+//       console.log("takpçiler bilgi", response)
+//       return response.data.data.followers;
+//     } catch (error) {
+//       return rejectWithValue(error.response?.data?.message || error.message);
+//     }
+//   }
+// );
 export const fetchFollowers = createAsyncThunk(
   "follow/fetchFollowers",
-  async (userId, { rejectWithValue }) => {
+  async (userId, { rejectWithValue, getState }) => {
     try {
       if (!userId) throw new Error("Kullanıcı ID'si geçersiz");
-      console.log("Takipçiler getiriliyor, userId:", userId);
+      
+      // Base URL'yi state'ten alın veya doğrudan belirtin
+      const baseUrl = Config.BASE_URL || 'https://api.example.com';
+      const fullUrl = `${baseUrl}follow/users/${userId}/followers`;
+      
+      console.log('[API REQUEST] FetchFollowers URL:', fullUrl);
+      console.log('[API REQUEST] Headers:', {
+        Authorization: `Bearer ${getState().auth.token}`,
+        'Content-Type': 'application/json'
+      });
+
       const response = await api.get(`follow/users/${userId}/followers`);
+      
+      console.log('[API RESPONSE] FetchFollowers:', {
+        status: response.status,
+        data: response.data,
+        config: {
+          url: response.config.url,
+          method: response.config.method,
+          headers: response.config.headers
+        }
+      });
+
       return response.data.data.followers;
     } catch (error) {
+      console.error('[API ERROR] FetchFollowers:', {
+        message: error.message,
+        response: error.response?.data,
+        config: error.config
+      });
       return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
@@ -64,17 +105,63 @@ export const fetchFollowers = createAsyncThunk(
 
 export const fetchFollowing = createAsyncThunk(
   "follow/fetchFollowing",
-  async (userId, { rejectWithValue }) => {
+  async (userId, { rejectWithValue, getState }) => {
     try {
       if (!userId) throw new Error("Kullanıcı ID'si geçersiz");
-      console.log("Takip edilenler getiriliyor, userId:", userId);
+      
+      const baseUrl = Config.BASE_URL || 'https://api.example.com';
+      const fullUrl = `${baseUrl}follow/users/${userId}/following`;
+      
+      console.log('[API REQUEST] FetchFollowing URL:', fullUrl);
+      console.log('[API REQUEST] Headers:', {
+        Authorization: `Bearer ${getState().auth.token}`,
+        'Content-Type': 'application/json'
+      });
+
       const response = await api.get(`follow/users/${userId}/following`);
+      
+      console.log('[API RESPONSE] FetchFollowing:', {
+        status: response.status,
+        data: response.data,
+        config: {
+          url: response.config.url,
+          method: response.config.method,
+          headers: response.config.headers
+        }
+      });
+
       return response.data.data.following;
     } catch (error) {
+      console.error('[API ERROR] FetchFollowing:', {
+        message: error.message,
+        response: error.response?.data,
+        config: error.config
+      });
       return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
 );
+
+// export const fetchFollowing = createAsyncThunk(
+//   "follow/fetchFollowing",
+//   async (userId, { rejectWithValue }) => {
+//     try {
+//       if (!userId) throw new Error("Kullanıcı ID'si geçersiz");
+//       console.log("Takip edilenler getiriliyor, userId:", userId);
+//       const response = await api.get(`follow/users/${userId}/following`);
+//       console.log("takp edilenler bilgi", response)
+//       // fetchFollowing içindeki logları güncelleyin
+// console.log("API Response - Following:", {
+//   status: response.status,
+//   data: response.data
+// });
+//       return response.data.data.following;
+      
+//     } catch (error) {
+//       return rejectWithValue(error.response?.data?.message || error.message);
+//     }
+//   }
+// );
 
 export const followUser = createAsyncThunk(
   "follow/followUser",

@@ -8,9 +8,12 @@ const userLogin = createAsyncThunk('auth/userLogin', async payload => {
     const response = await postRequest(Config.LOGIN_URL, payload);
     if (response.data) {
       await AsyncStorage.setItem('token', response.data.token);
+      return response.data; // Make sure to return this
     }
+    throw new Error('No data in response'); // Handle case where response.data is empty
   } catch (error) {
-    return error;
+    // You should reject with the error so it goes to the rejected case
+    throw error.response?.data || error.message;
   }
 });
 

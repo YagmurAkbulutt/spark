@@ -28,6 +28,7 @@ import ResetPassword from '../screens/auth/ResetPassword';
 import UserPost from '../components/Profile/UserPost';
 import {useDispatch, useSelector} from 'react-redux';
 import { userCheck } from '../redux/actions/authActions';
+import SearchProfileScreen from '../screens/search/SearchProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -51,6 +52,7 @@ const {
   SIGNUPSCREEN,
   FORGETPASSWORDSCREEN,
   RESETPASSWORDSCREEN,
+  SEARCHPROFILE
 } = SCREENS;
 
 // Deep linking yapılandırması
@@ -105,6 +107,7 @@ const AppNavigator = () => {
               <Stack.Screen name={STARTSCREEN} component={StartScreen} />
               <Stack.Screen name={POSTCONFIRM} component={PostConfirmScreen} />
               <Stack.Screen name={USERPOST} component={UserPost} />
+              <Stack.Screen name={SEARCHPROFILE} component={SearchProfileScreen} />
               <Stack.Screen
                 name={MESSAGELISTSCREEN}
                 component={MessageListScreen}

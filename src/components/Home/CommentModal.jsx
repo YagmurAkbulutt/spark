@@ -38,17 +38,23 @@ const CommentModal = ({commentModal, setCommentModal,onSubmitComment}) => {
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", (event) => {
-      Animated.timing(keyboardHeight, {
-        toValue: event.endCoordinates.height, // Klavyenin yüksekliği kadar kaydır
-        duration: 300,
+      const { height } = event.endCoordinates;
+      setKeyboardHeight(height);
+      
+      Animated.timing(animatedHeight, {
+        toValue: height * 0.6 - height * 0.1, // Klavye yüksekliğine göre ayarla
+        duration: 250,
+        easing: Easing.out(Easing.ease),
         useNativeDriver: false,
       }).start();
     });
 
     const keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", () => {
-      Animated.timing(keyboardHeight, {
-        toValue: 0, 
-        duration: 100,
+      setKeyboardHeight(0);
+      Animated.timing(animatedHeight, {
+        toValue: height * 0.6,
+        duration: 250,
+        easing: Easing.out(Easing.ease),
         useNativeDriver: false,
       }).start();
     });
@@ -213,6 +219,7 @@ const CommentModal = ({commentModal, setCommentModal,onSubmitComment}) => {
   }, [commentModal]);
 
   const animatedHeight = useRef(new Animated.Value(height * 0.85)).current;
+  
   return (
 //     <Modal
 //   animationType="none"

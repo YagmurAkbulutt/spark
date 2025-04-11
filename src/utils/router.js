@@ -17,5 +17,6 @@ export const SCREENS = {
     MESSAGELISTSCREEN : "MessageList",
     STARTSCREEN : "Start",
     POSTCONFIRM: "PostConfirm",
-    USERPOST: "UserPost"
+    USERPOST: "UserPost",
+    SEARCHPROFILE: "SearchProfile"
 }
