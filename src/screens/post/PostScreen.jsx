@@ -1,17 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import { View, TouchableOpacity, Text, StyleSheet, Image, Platform } from "react-native";
 import { Camera, CameraType } from "react-native-camera-kit";
-import SvgFlash from "../assets/flash";
-import SvgTurnCam from "../assets/turnCam";
-import SvgTimer from "../assets/timer";
-import SvgTakePhoto from "../assets/takePhoto";
+import SvgFlash from "../../assets/flash";
+import SvgTurnCam from "../../assets/turnCam";
+import SvgTimer from "../../assets/timer";
+import SvgTakePhoto from "../../assets/takePhoto";
 import { launchImageLibrary } from "react-native-image-picker";
-import SvgClose from "../assets/closeLight"; 
-import SvgFilter from "../assets/filterPhoto";
-import SvgNext from "../assets/next";
+import SvgClose from "../../assets/closeLight"; 
+import SvgFilter from "../../assets/filterPhoto";
+import SvgNext from "../../assets/next";
 import RNFS from "react-native-fs";
 import { check, request, PERMISSIONS, RESULTS } from "react-native-permissions";
-import { height } from "../utils/helpers";
+import { height } from "../../utils/helpers";
 import { saturate, invert, brightness, grayscale, sepia } from 'react-native-color-matrix-image-filters';
 import { ColorMatrix } from 'react-native-color-matrix-image-filters';
 

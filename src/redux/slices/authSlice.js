@@ -261,10 +261,50 @@ const authSlice = createSlice({
   },
   extraReducers: builder => {
     builder
-      .addCase(userLogin.pending, state => {
-        state.isLoading = true;
+    .addCase(userLogin.pending, state => {
+      state.isLoading = true;
+      state.error = null;
+    })
+    .addCase(userLogin.fulfilled, (state, action) => {
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.refreshToken = action.payload.refreshToken;
+      state.isLogin = true;
+      state.isLoading = false;
+    })
+    .addCase(userLogin.rejected, (state, action) => {
+      state.error = action.payload;
+      state.isLoading = false;
+      state.isLogin = false;
+    })
+    
+    // userCheck cases
+    .addCase(userCheck.pending, state => {
+      state.isLoading = true;
+    })
+    .addCase(userCheck.fulfilled, (state, action) => {
+      if (action.payload) {
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.refreshToken = action.payload.refreshToken;
+        state.isLogin = true;
+      } else {
+        state.isLogin = false;
+      }
+      state.isLoading = false;
+    })
+    .addCase(userCheck.rejected, (state, action) => {
+      state.error = action.payload;
+      state.isLoading = false;
+      state.isLogin = false;
+    })
+
+      .addCase(userLogout.fulfilled, (state) => {
+        state.token = null;
+        state.isLogin= false
       })
-      // .addCase(userLogin.fulfilled, (state, action) => {
+
+// .addCase(userLogin.fulfilled, (state, action) => {
       //   const { user, token, refreshToken } = action.payload; // API'den gelen veriler
       //   state.user = user; // Kullanıcı bilgilerini kaydet
       //   state.token = token;
@@ -273,31 +313,6 @@ const authSlice = createSlice({
       //   state.isLogin = true;
       //   state.error = null; // Hata varsa temizle
       // })
-      .addCase(userLogin.fulfilled, (state, action) => {
-        if (!action.payload?.user || !action.payload?.token) {
-          state.error = 'Incomplete login data';
-          state.isLoading = false;
-          return;
-        }
-        // ... rest of your code
-      })
-      .addCase(userLogin.rejected, (state, action) => {
-        state.error = action.payload;
-        state.isLoading = false;
-      })
-      .addCase(userCheck.fulfilled, (state, action) => {
-        state.isLogin = true;
-      })
-      .addCase(userCheck.rejected, (state, action) => {
-        state.error = action.payload;
-      })
-
-      .addCase(userLogout.fulfilled, (state) => {
-        state.token = null;
-        state.isLogin= false
-      })
-
-
 
       // Adım 1: Kayıt başlangıcı
       .addCase(registerUserStep1.pending, state => {

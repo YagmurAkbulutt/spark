@@ -12,6 +12,7 @@ import { setUserProfile } from "./src/redux/slices/authSlice";
 LogBox.ignoreAllLogs(); 
 
 const App = () => {
+
   return (
     <Provider store={store}> 
       <GestureHandlerRootView style={{ flex: 1 }}>

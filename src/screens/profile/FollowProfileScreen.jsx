@@ -15,9 +15,9 @@ import SearchProfileDetail from '../../components/Search/SearchProfileDetail';
 import { useNavigation } from '@react-navigation/native';
 
 
-const SearchProfileScreen = ({ route, closeModal }) => {
+const FollowProfileScreen = ({ route, closeModal }) => {
   const { user } = route.params;
-  console.log("gelen user", user)
+  console.log("follow profile gelen user", user)
     const dispatch = useDispatch();
     const { isLogin } = useSelector(state => state.auth);
     const followers = useSelector(state => state.follow.followers);
@@ -40,7 +40,7 @@ const SearchProfileScreen = ({ route, closeModal }) => {
     });
   
     // Debug 
-    console.log("Redux auth state:", { 
+    console.log("follow profile Redux auth state:", { 
       user, 
       isLogin,
       hasUserId: !!getSafeUserId(user)
@@ -243,19 +243,19 @@ const SearchProfileScreen = ({ route, closeModal }) => {
         isLoading={isLoading || loading}
       />
       
-      {optimisticState.isFollowing ? (
+      {/* {optimisticState.isFollowing ? ( */}
         <SearchProfileDetail user={user} />
-      ) : (
+      {/* ) : (
         <>
           <SearchProfileHidden user={user} />
           <FollowCard randomUser={randomUser} />
         </>
-      )}
+      )} */}
     </ScrollView>
   );
 };
 
-export default SearchProfileScreen;
+export default FollowProfileScreen;
 
 const styles = StyleSheet.create({
   loadingContainer: {

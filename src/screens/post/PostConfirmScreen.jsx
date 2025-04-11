@@ -1,12 +1,13 @@
 import {View, Image, TouchableOpacity, Text, StyleSheet} from 'react-native';
 import SvgBack from '../../assets/back';
 import {ScrollView, TextInput} from 'react-native-gesture-handler';
-import SearchComponent from '../../components/Post/SearchComponent';
+import SearchComponent from '../../components/Post/CategorySearchComponent';
 import { useDispatch, useSelector } from 'react-redux';
 import { useCallback, useEffect, useState } from 'react';
 import { addPost } from '../../redux/slices/userSlice';
 import { useFocusEffect } from '@react-navigation/native';
 import { height } from '../../utils/helpers';
+import CategorySearchComponent from '../../components/Post/CategorySearchComponent';
 
 const PostConfirmScreen = ({route, navigation}) => {
   const dispatch = useDispatch();
@@ -101,7 +102,7 @@ dispatch(addPost(newPost));
       <View style={styles.border} />
 
       
-      <SearchComponent/>
+      <CategorySearchComponent/>
 
       <TouchableOpacity onPress={handlePost} style={styles.shareBtn}>
           <Text style={styles.shareText}>Paylaş</Text>
@@ -123,8 +124,7 @@ const styles = StyleSheet.create({
     width: 105,
     height: 150,
     resizeMode: 'contain',
-    // aspectRatio:0.7,
-    backgroundColor: 'red',
+    aspectRatio:0.7,
     borderRadius: 4,
   },
   intContainer: {

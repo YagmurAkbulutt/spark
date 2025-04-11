@@ -23,7 +23,7 @@ import { logout } from '../../redux/slices/authSlice';
 import ProfileEdit from '../../components/Profile/ProfileEdit';
 import { userLogout } from '../../redux/actions/authActions';
 import { profileUpdate } from '../../redux/actions/userActions';
-import FollowList from '../../components/Profile/FollowList';
+
 
 const ProfileScreen = ({ closeModal }) => {
   // Ayrı modal state'leri
@@ -58,17 +58,21 @@ const ProfileScreen = ({ closeModal }) => {
     });
   };
 
-  // Takipçi listesini aç
-  const openFollowers = () => {
-    setActiveTab('followers');
-    setFollowListModalVisible(true);
-  };
+ // Takipçi listesini aç
+const openFollowers = () => {
+  navigation.navigate('FollowList', { 
+    activeTab: 'followers',
+    userId: userInfo.id 
+  });
+};
 
-  // Takip edilenleri aç
-  const openFollowing = () => {
-    setActiveTab('following');
-    setFollowListModalVisible(true);
-  };
+// Takip edilenleri aç
+const openFollowing = () => {
+  navigation.navigate('FollowList', { 
+    activeTab: 'following',
+    userId: userInfo.id 
+  });
+};
 
   // Profil güncelleme fonksiyonu
   const handleSave = async () => {
@@ -183,7 +187,7 @@ const ProfileScreen = ({ closeModal }) => {
       />
 
       {/* Takipçi/Takip Edilenler Listesi Modalı */}
-      <Modal
+      {/* <Modal
         animationType="slide"
         transparent={false}
         visible={followListModalVisible}
@@ -195,7 +199,7 @@ const ProfileScreen = ({ closeModal }) => {
           userId={userInfo.id} 
           onClose={() => setFollowListModalVisible(false)} 
         />
-      </Modal>
+      </Modal> */}
     </View>
   );
 };

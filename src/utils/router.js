@@ -18,5 +18,8 @@ export const SCREENS = {
     STARTSCREEN : "Start",
     POSTCONFIRM: "PostConfirm",
     USERPOST: "UserPost",
-    SEARCHPROFILE: "SearchProfile"
+    SEARCHPROFILE: "SearchProfile",
+    FOLLOWPROFILE: "FollowProfile",
+    FOLLOWLIST: "FollowList",
+    BRANDSEARCH: "BrandSearch"
 }

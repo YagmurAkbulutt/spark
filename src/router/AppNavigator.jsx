@@ -17,7 +17,7 @@ import SignUpScreen from '../screens/auth/SignUpScreen';
 import UsernameScreen from '../screens/auth/UsernameScreen';
 import MessageScreen from '../screens/messages/MessageScreen';
 import ChatScreen from '../screens/messages/ChatScreen';
-import PostScreen from '../screens/PostScreen';
+import PostScreen from '../screens/post/PostScreen';
 import FullPostScreen from '../screens/home/FullPostScreen';
 import React, {useEffect, useLayoutEffect, useState} from 'react';
 import MessageListScreen from '../screens/messages/MessageListScreen';
@@ -29,6 +29,10 @@ import UserPost from '../components/Profile/UserPost';
 import {useDispatch, useSelector} from 'react-redux';
 import { userCheck } from '../redux/actions/authActions';
 import SearchProfileScreen from '../screens/search/SearchProfileScreen';
+import FollowProfileScreen from '../screens/profile/FollowProfileScreen';
+import FollowListScreen from '../screens/profile/FollowListScreen';
+import { logout } from '../redux/slices/authSlice';
+import BrandSearchScreen from '../screens/post/BrandSearchScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -52,7 +56,10 @@ const {
   SIGNUPSCREEN,
   FORGETPASSWORDSCREEN,
   RESETPASSWORDSCREEN,
-  SEARCHPROFILE
+  SEARCHPROFILE,
+  FOLLOWPROFILE,
+  FOLLOWLIST,
+  BRANDSEARCH
 } = SCREENS;
 
 // Deep linking yapılandırması
@@ -78,6 +85,20 @@ const AppNavigator = () => {
   useEffect(() => {
   dispatch(userCheck())
   }, [])
+
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const result = await dispatch(userCheck()).unwrap();
+        console.log('Oturum kontrolü başarılı:', result);
+      } catch (error) {
+        console.log('Oturum kontrolü hatası:', error);
+        dispatch(logout()); 
+      }
+    };
+    
+    initAuth();
+  }, [dispatch]);
   return (
     <MessageProvider>
       <NavigationContainer linking={linking}>
@@ -108,6 +129,9 @@ const AppNavigator = () => {
               <Stack.Screen name={POSTCONFIRM} component={PostConfirmScreen} />
               <Stack.Screen name={USERPOST} component={UserPost} />
               <Stack.Screen name={SEARCHPROFILE} component={SearchProfileScreen} />
+              <Stack.Screen name={FOLLOWPROFILE} component={FollowProfileScreen} />
+              <Stack.Screen name={FOLLOWLIST} component={FollowListScreen} />
+              <Stack.Screen name={BRANDSEARCH} component={BrandSearchScreen} />
               <Stack.Screen
                 name={MESSAGELISTSCREEN}
                 component={MessageListScreen}

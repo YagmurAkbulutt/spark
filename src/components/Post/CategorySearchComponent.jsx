@@ -6,7 +6,7 @@ import { FlatList, TextInput } from "react-native-gesture-handler";
 import CategorySelector from "./CategorySelector";
 import CategoryDetail from "./CategoryDetail";
 
-const SearchComponent = () => {
+const CategorySearchComponent = () => {
     const categories = useSelector((state) => state.category.categories);  // Kategorileri state'ten alıyoruz
     const selectedCategories = useSelector((state) => state.category.selectedCategories);
     const [searchQuery, setSearchQuery] = useState("");
@@ -96,4 +96,4 @@ const styles = {
     },
 };
 
-export default SearchComponent;
+export default CategorySearchComponent;

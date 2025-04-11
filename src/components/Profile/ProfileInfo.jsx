@@ -8,6 +8,7 @@ const ProfileInfo = ({
   isFollowingUser,
   isLoading,
 }) => {
+  console.log("profileinfo user", user)
   // Takipçi ve takip edilen sayılarını formatlama
   const formatFollow = num => {
     if (num === undefined || num === null) return '0';
@@ -31,7 +32,7 @@ const ProfileInfo = ({
         {/* Profil Resmi */}
         <View style={styles.profileImageContainer}>
           <Image
-            source={{uri: user?.profilePicture}}
+            source={{uri: user.user.profilePicture}}
             style={styles.userImage}
             onError={e =>
               console.log('Resim yüklenemedi:', e.nativeEvent.error)
@@ -42,17 +43,17 @@ const ProfileInfo = ({
         {/* Kullanıcı Bilgileri */}
         <View style={styles.userInfo}>
           <Text style={styles.username}>
-            {user?.username || 'Kullanıcı Adı'}
+            {user.user.username || 'Kullanıcı Adı'}
           </Text>
 
           {/* Takipçi/Takip Bilgileri */}
           <View style={styles.follow}>
             <Text style={styles.followCountText}>
-              {formatFollow(user?.followersCount)} takipçi
+              {formatFollow(user.followersCount)} takipçi
             </Text>
             <SvgDot />
             <Text style={styles.followCountText}>
-              {formatFollow(user?.followingCount)} takip
+              {formatFollow(user.followingCount)} takip
             </Text>
           </View>
 
@@ -87,7 +88,7 @@ const ProfileInfo = ({
       </View>
 
       {/* Kullanıcı Bio */}
-      <Text style={styles.userBio}>{user?.bio}</Text>
+      <Text style={styles.userBio}>{user.user.bio}</Text>
     </>
   );
 };

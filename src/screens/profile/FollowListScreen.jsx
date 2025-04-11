@@ -3,30 +3,48 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, 
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchFollowers, fetchFollowing } from '../../redux/slices/followSlice';
 import SvgBack from "../../assets/back.js"
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 
-const FollowList = ({ activeTab, userId, onClose }) => {
+const FollowListScreen = ({ onClose,route }) => {
   const dispatch = useDispatch();
   const navigation = useNavigation()
+  const { activeTab, userId } = route.params;
   
+  console.log("userınfo",userId)
+  const { followers, following, loading } = useSelector(state => state.follow);
   
-  const { followers, following } = useSelector(state => state.follow);
+  useFocusEffect(
+    React.useCallback(() => {
+      // Önce mevcut verileri temizle (geçici olarak boş dizi yap)
+      if (activeTab === 'followers') {
+        dispatch({ type: 'followers/reset' }); // Redux'ta followers'ı sıfırla
+      } else {
+        dispatch({ type: 'following/reset' }); // Redux'ta following'i sıfırla
+      }
   
-  useEffect(() => {
-    if (activeTab === 'followers') {
-      dispatch(fetchFollowers(userId));
-    } else {
-      dispatch(fetchFollowing(userId));
-    }
-  }, [activeTab, userId, dispatch]);
+      // Sonra yeni verileri çek
+      if (activeTab === 'followers') {
+        dispatch(fetchFollowers(userId));
+      } else {
+        dispatch(fetchFollowing(userId));
+      }
+    }, [activeTab, userId])
+  );
+//   if (loading) {
+//     return (
+//         <View style={styles.loadingContainer}>
+//         <ActivityIndicator size="large" />
+//       </View>
+//     );
+//   }
 
   const currentData = activeTab === 'followers' ? followers : following;
   console.log("Current Data:", currentData);
-  if (currentData.loading) {
+  if (loading || currentData.loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" />
       </View>
     );
   }
@@ -41,15 +59,16 @@ const FollowList = ({ activeTab, userId, onClose }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>
-        <TouchableOpacity onPress={onClose}>
-          <SvgBack/>
-        </TouchableOpacity>
-          {activeTab === 'followers' ? 'Takipçiler' : 'Takip Edilenler'}
-        </Text>
-        
-      </View>
+     <View style={styles.header}>
+  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <TouchableOpacity onPress={navigation.goBack}>
+      <SvgBack/>
+    </TouchableOpacity>
+    <Text style={[styles.title, { marginLeft: 15 }]}>
+      {activeTab === 'followers' ? 'Takipçiler' : 'Takip Edilenler'}
+    </Text>
+  </View>
+</View>
 
       <FlatList
         data={currentData}
@@ -57,10 +76,10 @@ const FollowList = ({ activeTab, userId, onClose }) => {
         renderItem={({ item }) => (
           <TouchableOpacity 
             style={styles.userItem}
-            onPress={() => navigation.navigate('SearchProfile', { user: item })}
+            onPress={() => navigation.navigate('FollowProfile', { user: item })}
           >
             <Image 
-              source={{ uri: item.profilePicture || 'https://via.placeholder.com/150' }} 
+              source={{ uri: item.profilePicture }} 
               style={styles.profileImage}
             />
             <View style={styles.userInfo}>
@@ -87,24 +106,22 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 15,
     backgroundColor: '#fff',
-    marginTop:100
+    
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'center', // Dikeyde ortala
     marginBottom: 20,
     paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee'
+    borderBottomColor: '#eee',
+    marginTop: 70,
+    paddingHorizontal: 16, // Yan boşluk ekle
   },
   title: {
-    fontSize: 20,
+    marginLeft: 10, // İkon ile yazı arasına boşluk ekle
+    fontSize: 18,
     fontWeight: 'bold',
-  },
-  closeButton: {
-    color: '#007AFF',
-    fontSize: 16,
   },
   userItem: {
     flexDirection: 'row',
@@ -158,4 +175,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default FollowList;
+export default FollowListScreen;

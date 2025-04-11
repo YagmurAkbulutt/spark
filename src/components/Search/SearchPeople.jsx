@@ -14,7 +14,6 @@ import {width} from '../../utils/helpers';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useEffect, useState} from 'react';
 import { useNavigation } from '@react-navigation/native';
-import SearchProfile from './SearchProfile';
 
 const SearchPeople = ({ filteredUsers }) => {
   const [savedUsers, setSavedUsers] = useState([]);
@@ -29,6 +28,7 @@ const SearchPeople = ({ filteredUsers }) => {
     const loadSavedUsers = async () => {
       try {
         const storedUsers = await AsyncStorage.getItem('savedUsers');
+        console.log("aranan kayıtlı", JSON.parse(storedUsers))
         if (storedUsers) {
           const parsedUsers = JSON.parse(storedUsers);
           const limitedUsers = parsedUsers.slice(0, 7); // sadece ilk 7 kullanıcı
@@ -41,10 +41,11 @@ const SearchPeople = ({ filteredUsers }) => {
     loadSavedUsers();
   }, []);
   
-  const navigation = useNavigation(); // Eğer bu bir bileşense, useNavigation hook'unu ekleyin
+  const navigation = useNavigation(); 
 
   // Kullanıcı seçildiğinde çalışacak fonksiyon
   const handleSelectUser = async (user) => {
+    console.log("seçili user", user)
     try {
       let updatedUsers = [...savedUsers];
   
@@ -55,12 +56,9 @@ const SearchPeople = ({ filteredUsers }) => {
         updatedUsers.splice(existingIndex, 1);
         updatedUsers.push(user);
       } else {
-        // Eğer kullanıcı yoksa:
         if (updatedUsers.length >= 7) {
-          // En eski kullanıcıyı (ilk) çıkar
           updatedUsers.shift();
         }
-        // Yeni kullanıcıyı sona ekle
         updatedUsers.push(user);
       }
   
@@ -72,7 +70,7 @@ const SearchPeople = ({ filteredUsers }) => {
     } catch (error) {
       console.error('Kullanıcı eklenirken hata:', error);
     }
-    navigation.navigate('SearchProfile', { user });
+    navigation.navigate('SearchProfile', { user } );
   };
   
 
@@ -117,6 +115,7 @@ const SearchPeople = ({ filteredUsers }) => {
               <View style={styles.userInfo}>
                 <Text style={styles.username}>{item.fullName}</Text>
                 <Text style={styles.userHandle}>{item.username}</Text>
+                <Text style={styles.userHandle}>{item.bio}</Text>
               </View>
             </TouchableOpacity>
             <View style={styles.closeIconContainer}>
