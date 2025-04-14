@@ -1,11 +1,17 @@
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import {height} from '../../utils/helpers';
 import SvgNext from '../../assets/nextSm';
 import {TextInput} from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
+import { setProductUrl } from '../../redux/slices/productLinkSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateCategoryProduct } from '../../redux/slices/categoriesSlice';
 
 const CategoryDetail = ({selectedCategory}) => {
   const navigation = useNavigation()
+  const dispatch = useDispatch()
+  const { currentProduct } = useSelector((state) => state.productLink);
+  
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>{selectedCategory}</Text>
@@ -14,7 +20,7 @@ const CategoryDetail = ({selectedCategory}) => {
           <Text style={styles.text}>Marka</Text>
           <SvgNext style={styles.button} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.selection} activeOpacity={0.7}>
+        <TouchableOpacity style={styles.selection} activeOpacity={0.7}  onPress={() => navigation.navigate('ColorPicker')}>
           <Text style={styles.text}>Renk</Text>
           <SvgNext style={styles.button} />
         </TouchableOpacity>
@@ -23,11 +29,15 @@ const CategoryDetail = ({selectedCategory}) => {
           <SvgNext style={styles.button} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.selection} activeOpacity={0.7}>
-          <TextInput
+        <TextInput
             placeholder="Ürün Linki"
             placeholderTextColor="#9D9C9C"
             style={styles.input}
             selectionColor="#D134AA"
+            onChangeText={(text) => {
+              dispatch(setProductUrl(text)); 
+            }}
+            value={currentProduct.url} 
           />
         </TouchableOpacity>
       </View>

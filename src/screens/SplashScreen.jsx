@@ -31,33 +31,33 @@ const images = [
 const SplashScreen = ({ navigation }) => {
   // const [loading, setLoading] = useState(true);
   useEffect(() => {
-    // const checkUserStatus = async () => {
-    //   try {
-    //     const isRegistered = await AsyncStorage.getItem("isRegistered");
-    //     const isLoggedIn = await AsyncStorage.getItem("isLoggedIn");
+    const checkUserStatus = async () => {
+      try {
+        const isRegistered = await AsyncStorage.getItem("isRegistered");
+        const isLoggedIn = await AsyncStorage.getItem("isLoggedIn");
 
-    //     console.log("isLoggedIn:", isLoggedIn);
-    //     console.log("isRegistered:", isRegistered);
+        console.log("isLoggedIn:", isLoggedIn);
+        console.log("isRegistered:", isRegistered);
 
-    //     if (isLoggedIn === "true") {
-    //       console.log("Kullanıcı giriş yapmış, Home ekranına yönlendiriliyor.");
-    //       navigation.replace("Main"); 
-    //     } else if (isRegistered === "true") {
-    //       console.log("Kullanıcı kayıtlı, SignIn ekranına yönlendiriliyor.");
-    //       navigation.replace("SignIn"); 
-    //     } else {
-    //       console.log("Kullanıcı yeni, Entry ekranına yönlendiriliyor.");
-    //       navigation.replace("Entry"); 
-    //     }
-    //   } catch (error) {
-    //     console.error("Hata:", error);
-    //     navigation.replace("Entry"); 
-    //   }
-    // };
+        if (isLoggedIn === "true") {
+          console.log("Kullanıcı giriş yapmış, Home ekranına yönlendiriliyor.");
+          navigation.replace("Main"); 
+        } else if (isRegistered === "true") {
+          console.log("Kullanıcı kayıtlı, SignIn ekranına yönlendiriliyor.");
+          navigation.replace("SignIn"); 
+        } else {
+          console.log("Kullanıcı yeni, Entry ekranına yönlendiriliyor.");
+          navigation.replace("Entry"); 
+        }
+      } catch (error) {
+        console.error("Hata:", error);
+        navigation.replace("Entry"); 
+      }
+    };
 
     setTimeout(() => {
       checkUserStatus();
-    }, 1000); // Küçük bir gecikme ekleyelim ki takılma olmasın
+    }, 1000); 
   }, [navigation]);
 
  

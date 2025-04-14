@@ -21,5 +21,7 @@ export const SCREENS = {
     SEARCHPROFILE: "SearchProfile",
     FOLLOWPROFILE: "FollowProfile",
     FOLLOWLIST: "FollowList",
-    BRANDSEARCH: "BrandSearch"
+    BRANDSEARCH: "BrandSearch",
+    COLORPICKER: "ColorPicker",
+    SCROLLPOST: "ScrollPost"
 }

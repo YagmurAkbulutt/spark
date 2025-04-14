@@ -20,7 +20,11 @@ const searchProfileSlice = createSlice({
           id: user.id,
           username: user.username,
           profilePicture: user.profilePicture,
-          bio: user.bio
+          bio: user.bio,
+          followerCount: user.followerCount,
+          followingCount: user.followingCount,
+          posts: user.posts,
+          fullName: user.fullName
         }));
       })
       .addCase(searchProfile.rejected, (state, action) => {

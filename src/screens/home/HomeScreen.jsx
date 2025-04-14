@@ -21,6 +21,8 @@ import Loader from '../../components/Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import { getUserInfo } from '../../redux/actions/userActions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ScrollPostScreen from './ScrollPostScreen';
+import { useNavigation } from '@react-navigation/native';
 
 const getImageSize = async image => {
   return {
@@ -104,29 +106,60 @@ isLogin && dispatch(getUserInfo({}))
     }
   };
   
-  const handleOpenImage = (image) => {
-    // 1. Önce FlatList'i sıfırla (scroll'u en başa al)
-    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+  // const handleOpenImage = (image) => {
+  //   // 1. Önce FlatList'i sıfırla (scroll'u en başa al)
+  //   flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
   
-    // 2. Modal'ı kapat ve hemen yeni resmi aç (50ms gecikmeyle)
-    setSelectedImage(null);
-    setTimeout(() => {
-      setSelectedImage(image);
-    }, 50);
+  //   // 2. Modal'ı kapat ve hemen yeni resmi aç (50ms gecikmeyle)
+  //   setSelectedImage(null);
+  //   setTimeout(() => {
+  //     setSelectedImage(image);
+  //   }, 50);
+  // };
+
+  const handleOpenImage = (image) => {
+    console.log('handleOpenImage tetiklendi', image);
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+    setSelectedImage(image);
+    console.log('selectedImage güncellendi:', image);
   };
+  const navigation = useNavigation()
+  // const handleOpenImage = (image) => {
+  //   navigation.navigate('ScrollPost', {
+  //     allPosts,
+  //     formattedImages,
+  //     selectedImage: image,
+  //     extraData: dataToScroll
+  //   });
+  // };
+
+
   const customImageComponent = useMemo(
     () => item => {
+      console.log('customImageComponent render edildi', item);
       const foundItem = formattedImages.find(i => i.uri === item.source.uri);
-
-      const handlePress = (item, index) => {
-        setSelectedImage(item);
+      console.log('foundItem:', foundItem);
+  
+      const handlePress = () => {
+        console.log('Resme tıklandı:', foundItem);
+        if (foundItem) {
+          handleOpenImage(foundItem);
+        } else {
+          console.warn('foundItem bulunamadı!');
+        }
       };
-
+  
       return foundItem ? (
-        <ImageCarousel item={foundItem} onPress={() => handleOpenImage(foundItem)} />
-      ) : null;
+        <ImageCarousel 
+          item={foundItem} 
+          onPress={handlePress} 
+        />
+      ) : (
+        console.warn('foundItem null döndü'),
+        null
+      );
     },
-    [formattedImages,handleOpenImage],
+    [formattedImages, handleOpenImage],
   );
 
   const dataToScroll = formattedImages.map(image => ({
@@ -267,6 +300,29 @@ isLogin && dispatch(getUserInfo({}))
      </Modal>
      
       )}
+     {/* {selectedImage && (
+  console.log('ScrollPostScreen render ediliyor, selectedImage:', selectedImage),
+  <View style={{
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 100,
+    flex:1
+  }}>
+  <ScrollPostScreen
+    allPosts={allPosts}
+    formattedImages={formattedImages}
+    selectedImage={selectedImage}
+    onClose={() => {
+      console.log('ScrollPostScreen kapatıldı');
+      setSelectedImage(null);
+    }}
+    extraData={dataToScroll}
+  />
+  </View>
+)} */}
     </View>
   );
 };

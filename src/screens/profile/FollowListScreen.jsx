@@ -85,7 +85,7 @@ const FollowListScreen = ({ onClose,route }) => {
             <View style={styles.userInfo}>
               <Text style={styles.username}>{item.fullName}</Text>
               <Text style={styles.username}>{item.username}</Text>
-              <Text style={styles.bio} numberOfLines={1}>{item.bio}</Text>
+              
             </View>
           </TouchableOpacity>
         )}

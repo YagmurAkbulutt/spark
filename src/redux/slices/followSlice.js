@@ -1,7 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/api";
-import Config from "react-native-config";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Helper fonksiyonlar
 const handlePending = (state) => {
@@ -14,93 +12,91 @@ const handleRejected = (state, action) => {
   state.status = "failed";
   state.loading = false;
   
-  // Hata payload'u artık bir obje olacak
-  const error = action.payload || {};
-  state.error = error.message || "Bilinmeyen hata";
+  // Enhanced error handling
+  const error = action.payload;
+  state.error = error;
   
   console.error("API Error Details:", {
     timestamp: new Date().toISOString(),
-    errorType: error.originalError?.name || 'UnknownError',
-    message: error.message || 'No error message available',
-    statusCode: error.originalError?.response?.status || 'N/A',
-    requestUrl: error.originalError?.config?.url || 'Unknown endpoint',
-    requestMethod: error.originalError?.config?.method?.toUpperCase() || 'N/A',
-    stackTrace: error.originalError?.stack || 'No stack trace available',
-    fullError: error.originalError || error
+    errorType: error?.name || 'UnknownError',
+    message: error?.message || 'No error message available',
+    statusCode: error?.status || error?.response?.status || 'N/A',
+    requestUrl: error?.config?.url || 'Unknown endpoint',
+    requestMethod: error?.config?.method?.toUpperCase() || 'N/A',
+    stackTrace: error?.stack || 'No stack trace available',
+    fullError: error
   });
 };
 
 // Takip listesindeki ID'leri normalize eden yardımcı fonksiyon
 const normalizeId = (id) => {
   if (!id) return null;
+  
+  // Eğer id bir string değilse, toString() ile string'e çevir
   return typeof id === 'string' ? id : String(id);
 };
 
 // Kullanıcının takip durumunu kontrol eden yardımcı fonksiyon
 export const isUserFollowing = (following, targetUserId) => {
-  if (!following || !following.length || !targetUserId) return false;
+  if (!following || !following.length || !targetUserId) {
+    console.log('Takip kontrolü başarısız: Eksik veri', { 
+      following: following ? `${following.length} eleman` : 'undefined', 
+      targetUserId 
+    });
+    return false;
+  }
   
   // Tüm olası ID formatlarını kontrol et
   const normalizedTargetId = normalizeId(targetUserId);
+  console.log('Normalize edilmiş hedef ID:', normalizedTargetId);
   
-  return following.some(user => {
-    const followingId = normalizeId(user.id) || normalizeId(user._id) || normalizeId(user.userId);
-    return followingId === normalizedTargetId;
+  // Ayrıntılı log için takip listesinin ilk birkaç elemanını yazdır
+  const sampleFollowing = following.slice(0, 3).map(f => ({
+    id: f.id || f._id,
+    username: f.username
+  }));
+  console.log('Takip listesi örneği:', sampleFollowing);
+  
+  const isFollowing = following.some(user => {
+    // Takip edilen kullanıcı nesnesinin olası ID formatlarını kontrol et
+    let followingId = null;
+    
+    if (user._id) {
+      followingId = normalizeId(user._id);
+    } else if (user.id) {
+      followingId = normalizeId(user.id);
+    } else if (typeof user === 'string') {
+      // Direkt string ID durumu
+      followingId = user;
+    }
+    
+    const comparison = followingId === normalizedTargetId;
+    
+    if (comparison) {
+      console.log('Takip eşleşmesi bulundu:', { 
+        followingId, 
+        targetId: normalizedTargetId,
+        username: user.username
+      });
+    }
+    
+    return comparison;
   });
+  
+  console.log('Takip durumu sonucu:', isFollowing);
+  return isFollowing;
 };
 
 // Async Thunk'lar
-// export const fetchFollowers = createAsyncThunk(
-//   "follow/fetchFollowers",
-//   async (userId, { rejectWithValue }) => {
-//     try {
-//       if (!userId) throw new Error("Kullanıcı ID'si geçersiz");
-//       console.log("Takipçiler getiriliyor, userId:", userId);
-//       const response = await api.get(`follow/users/${userId}/followers`);
-//       console.log("takpçiler bilgi", response)
-//       return response.data.data.followers;
-//     } catch (error) {
-//       return rejectWithValue(error.response?.data?.message || error.message);
-//     }
-//   }
-// );
-
-
 export const fetchFollowers = createAsyncThunk(
   "follow/fetchFollowers",
-  async (userId, { rejectWithValue, getState }) => {
+  async (userId, { rejectWithValue }) => {
     try {
       if (!userId) throw new Error("Kullanıcı ID'si geçersiz");
-      
-      
-      const baseUrl = Config.BASE_URL;
-      const fullUrl = `${baseUrl}follow/users/${userId}/followers`;
-      
-      console.log('[API REQUEST] FetchFollowers URL:', fullUrl);
-      console.log('[API REQUEST] Headers:', {
-        Authorization: `Bearer ${getState().auth.token}`,
-        'Content-Type': 'application/json'
-      });
-
-      const response = await api.get(`follow/users/${userId}/followers`);
-      
-      console.log('[API RESPONSE] FetchFollowers:', {
-        status: response.status,
-        data: response.data,
-        config: {
-          url: response.config.url,
-          method: response.config.method,
-          headers: response.config.headers
-        }
-      });
-
+      console.log("Takipçiler getiriliyor, userId:", userId);
+      const response = await api.get(`/follow/users/${userId}/followers`);
       return response.data.data.followers;
     } catch (error) {
-      console.error('[API ERROR] FetchFollowers:', {
-        message: error.message,
-        response: error.response?.data,
-        config: error.config
-      });
       return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
@@ -108,109 +104,62 @@ export const fetchFollowers = createAsyncThunk(
 
 export const fetchFollowing = createAsyncThunk(
   "follow/fetchFollowing",
-  async (userId, { rejectWithValue, getState }) => {
+  async (userId, { rejectWithValue }) => {
     try {
       if (!userId) throw new Error("Kullanıcı ID'si geçersiz");
-      
-      const baseUrl = Config.BASE_URL;
-      const fullUrl = `${baseUrl}follow/users/${userId}/following`;
-      
-      console.log('[API REQUEST] FetchFollowing URL:', fullUrl);
-      console.log('[API REQUEST] Headers:', {
-        Authorization: `Bearer ${getState().auth.token}`,
-        'Content-Type': 'application/json'
-      });
-
+      console.log("Takip edilenler getiriliyor, userId:", userId);
       const response = await api.get(`follow/users/${userId}/following`);
-      
-      console.log('[API RESPONSE] FetchFollowing:', {
-        status: response.status,
-        data: response.data,
-        config: {
-          url: response.config.url,
-          method: response.config.method,
-          headers: response.config.headers
-        }
-      });
-
       return response.data.data.following;
     } catch (error) {
-      console.error('[API ERROR] FetchFollowing:', {
-        message: error.message,
-        response: error.response?.data,
-        config: error.config
-      });
       return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
 );
 
-// export const fetchFollowing = createAsyncThunk(
-//   "follow/fetchFollowing",
-//   async (userId, { rejectWithValue }) => {
-//     try {
-//       if (!userId) throw new Error("Kullanıcı ID'si geçersiz");
-//       console.log("Takip edilenler getiriliyor, userId:", userId);
-//       const response = await api.get(`follow/users/${userId}/following`);
-//       console.log("takp edilenler bilgi", response)
-//       // fetchFollowing içindeki logları güncelleyin
-// console.log("API Response - Following:", {
-//   status: response.status,
-//   data: response.data
-// });
-//       return response.data.data.following;
-      
-//     } catch (error) {
-//       return rejectWithValue(error.response?.data?.message || error.message);
-//     }
-//   }
-// );
-
 export const followUser = createAsyncThunk(
   "follow/followUser",
   async (userId, { rejectWithValue, dispatch, getState }) => {
     try {
-      // 1. userId kontrolü (hala önemli)
       if (!userId || userId === 'undefined' || userId === 'null') {
-        return rejectWithValue("Geçersiz kullanıcı ID'si");
+        console.error("Geçersiz kullanıcı ID'si:", userId);
+        return rejectWithValue("Kullanıcı ID'si geçersiz");
       }
-
-      // 2. Giriş yapmış kullanıcının ID'sini direkt al
-      const { auth } = getState();
-      const currentUserId = auth.user.id || auth.user._id; // Artık null kontrolü yok
-     
+      
+      const currentUser = getState().auth.user;
+      if (!currentUser || (!currentUser._id && !currentUser.id)) {
+        return rejectWithValue("Kullanıcı girişi yapılmamış");
+      }
+      
+      const currentUserId = currentUser._id || currentUser.id;
       console.log(`Takip işlemi - Kullanıcı ${currentUserId}, Hedef: ${userId}`);
-
-      // 3. Zaten takip ediliyor mu kontrolü
-      if (isUserFollowing(getState().follow.following, userId)) {
+      
+      // Zaten takip ediliyor mu kontrol et
+      const currentFollowing = getState().follow.following;
+      if (isUserFollowing(currentFollowing, userId)) {
         return rejectWithValue("Bu kullanıcıyı zaten takip ediyorsunuz");
       }
-
-      // 4. API isteği gönder
-      const response = await api.post(`follow/users/${userId}`);
-
-      // 5. Başarılı yanıtı işle
-      if (response.data?.status === 'success') {
-        // Optimistik update için 300ms bekle
+      
+      // Web ile uyumlu endpoint kullanımı
+      const response = await api.post(`/follow/users/${userId}/follow`);
+      
+      // API yanıt formatınıza göre düzenleyin; örneğin:
+      if (response.data && response.data.status === 'success') {
+        // İşlem başarılı olduktan sonra güncel listeleri al
         setTimeout(() => {
           dispatch(fetchFollowing(currentUserId));
           dispatch(fetchFollowers(userId));
         }, 300);
         
-        return { 
-          followData: response.data.data.follow, 
-          userId 
+        return {
+          followData: response.data.data.follow,
+          userId: userId
         };
+      } else {
+        return rejectWithValue("Takip işlemi başarısız oldu");
       }
-      
-      return rejectWithValue(response.data?.message || "Takip işlemi başarısız");
-
     } catch (error) {
-      console.error("Takip hatası:", error);
-      return rejectWithValue({
-        message: error.response?.data?.message || "Takip işlemi sırasında hata",
-        code: error.response?.status,
-      });
+      console.error("Takip işlemi API hatası:", error.response?.data || error.message);
+      return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
 );
@@ -239,7 +188,7 @@ export const unfollowUser = createAsyncThunk(
       }
       
       // Web ile uyumlu endpoint kullanımı
-      await api.delete(`follow/users/${userId}`);
+      await api.delete(`/follow/users/${userId}/follow`);
       
       // İşlem başarılı olduktan sonra güncel listeleri al
       setTimeout(() => {

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -22,7 +22,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice';
 import ProfileEdit from '../../components/Profile/ProfileEdit';
 import { userLogout } from '../../redux/actions/authActions';
-import { profileUpdate } from '../../redux/actions/userActions';
+import { getUserInfo, profileUpdate } from '../../redux/actions/userActions';
 
 
 const ProfileScreen = ({ closeModal }) => {
@@ -43,6 +43,24 @@ const ProfileScreen = ({ closeModal }) => {
   const [isMenuVisible, setIsMenuVisible] = useState(false); 
   const navigation = useNavigation();
   const dispatch = useDispatch();
+
+   // Veriyi çeken fonksiyon
+   const fetchData = useCallback(() => {
+    dispatch(getUserInfo()) // Parametresiz çağırıyoruz (auth/me endpoint'i kullanıcı token'ını otomatik alır)
+      .unwrap()
+      .catch((err) => console.error("Hata:", err));
+  }, [dispatch]);
+
+  // Ekran her açıldığında veriyi çek
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Focus olduğunda yenile
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', fetchData);
+    return unsubscribe;
+  }, [navigation, fetchData]);
 
    // Galeriden fotoğraf seçme işlemi
    const selectImage = async () => {

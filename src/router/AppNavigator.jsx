@@ -33,6 +33,8 @@ import FollowProfileScreen from '../screens/profile/FollowProfileScreen';
 import FollowListScreen from '../screens/profile/FollowListScreen';
 import { logout } from '../redux/slices/authSlice';
 import BrandSearchScreen from '../screens/post/BrandSearchScreen';
+import ColorPickerScreen from '../screens/post/ColorPickerScreen';
+import ScrollPostScreen from '../screens/home/ScrollPostScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -59,7 +61,9 @@ const {
   SEARCHPROFILE,
   FOLLOWPROFILE,
   FOLLOWLIST,
-  BRANDSEARCH
+  BRANDSEARCH,
+  COLORPICKER,
+  SCROLLPOST
 } = SCREENS;
 
 // Deep linking yapılandırması
@@ -132,6 +136,8 @@ const AppNavigator = () => {
               <Stack.Screen name={FOLLOWPROFILE} component={FollowProfileScreen} />
               <Stack.Screen name={FOLLOWLIST} component={FollowListScreen} />
               <Stack.Screen name={BRANDSEARCH} component={BrandSearchScreen} />
+              <Stack.Screen name={COLORPICKER} component={ColorPickerScreen} />
+              <Stack.Screen name={SCROLLPOST} component={ScrollPostScreen}  />  
               <Stack.Screen
                 name={MESSAGELISTSCREEN}
                 component={MessageListScreen}

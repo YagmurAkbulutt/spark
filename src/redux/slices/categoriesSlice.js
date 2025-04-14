@@ -6,6 +6,7 @@ const initialState = {
     "Pantolon", "Sweatshirt", "Şort", "Takım", "Tişört", "Tulum", "Etek"
   ],
   selectedCategories: [],
+  categoryProducts: {}
 };
 
 const categorySlice = createSlice({
@@ -14,14 +15,43 @@ const categorySlice = createSlice({
   reducers: {
     toggleCategory: (state, action) => {
       const category = action.payload;
-      if (state.selectedCategories.includes(category)) {
-        state.selectedCategories = state.selectedCategories.filter(c => c !== category);
+      const index = state.selectedCategories.indexOf(category);
+      
+      if (index !== -1) {
+        // Kategori zaten seçili, kaldırıyoruz
+        state.selectedCategories.splice(index, 1);
+        // İsteğe bağlı: Kategori kaldırıldığında ürün bilgilerini de sil
+        // delete state.categoryProducts[category];
       } else {
+        // Yeni kategori ekliyoruz
         state.selectedCategories.push(category);
+        // Yalnızca bu kategori için boş bir obje oluştur (eğer yoksa)
+        state.categoryProducts[category] = state.categoryProducts[category] || { 
+          brand: "",
+          color: "",
+          collarType: "",
+          url: ""
+        };
       }
     },
+    updateCategoryProduct: (state, action) => {
+      const { category, field, value } = action.payload;
+      if (state.selectedCategories.includes(category)) {
+        // Kategori seçili değilse güncelleme yapma
+        if (!state.categoryProducts[category]) {
+          state.categoryProducts[category] = {};
+        }
+        state.categoryProducts[category][field] = value;
+      }
+    },
+    setCategoryProduct: (state, action) => {
+      const { category, productData } = action.payload;
+      if (state.selectedCategories.includes(category)) {
+        state.categoryProducts[category] = productData;
+      }
+    }
   },
 });
 
-export const { toggleCategory } = categorySlice.actions;
+export const { toggleCategory, updateCategoryProduct, setCategoryProduct } = categorySlice.actions;
 export default categorySlice.reducer;

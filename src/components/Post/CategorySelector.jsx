@@ -1,16 +1,20 @@
-import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { toggleCategory } from "../../redux/slices/categoriesSlice";
+import { setProductType } from "../../redux/slices/productLinkSlice";
 
 const CategorySelector = ({categories, selectedCategories, dispatch}) => {
   const numColumns = 4;
-
   const numRows = Math.ceil(categories.length / numColumns);
-
   const columns = Array.from({ length: numColumns }, (_, colIndex) =>
     categories.filter((_, index) => index % numColumns === colIndex)
   );
+
+  const handleCategoryToggle = (category) => {
+    dispatch(toggleCategory(category));
+    // Pass an object with both category and type, but the reducer will extract just the type
+    dispatch(setProductType({ category, type: category }));
+  };
 
   return (
     <View style={styles.container}>
@@ -21,7 +25,7 @@ const CategorySelector = ({categories, selectedCategories, dispatch}) => {
               activeOpacity={0.7}
               key={index}
               style={styles.categoryContainer}
-              onPress={() => dispatch(toggleCategory(category))}
+              onPress={() => handleCategoryToggle(category)}
             >
               <View
                 style={[

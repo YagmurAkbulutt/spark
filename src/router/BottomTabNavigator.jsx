@@ -5,7 +5,7 @@ import SearchScreen from '../screens/search/SearchScreen';
 import PostScreen from '../screens/post/PostScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import NotificationsScreen from '../screens/notifications/NotificationsScreen';
-import { useNavigationState } from '@react-navigation/native';
+import { getFocusedRouteNameFromRoute, useNavigationState } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import SvgHome from "../assets/home";
 import SvgSearch from "../assets/search";
@@ -52,6 +52,7 @@ const BottomTabNavigator = () => {
           display: shouldHideTabBar ? "none" : "flex", 
         }
       }}
+    
     >
       <Tab.Screen
         options={{ tabBarIcon: ({ focused }) => (focused ? <SvgHomeFill /> : <SvgHome />) }}

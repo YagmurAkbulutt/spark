@@ -14,6 +14,8 @@ import { check, request, PERMISSIONS, RESULTS } from "react-native-permissions";
 import { height } from "../../utils/helpers";
 import { saturate, invert, brightness, grayscale, sepia } from 'react-native-color-matrix-image-filters';
 import { ColorMatrix } from 'react-native-color-matrix-image-filters';
+import { useDispatch, useSelector } from "react-redux";
+import { setPhotoUri } from "../../redux/slices/photoSlice";
 
 
 const PostScreen = ({ navigation }) => { 
@@ -27,7 +29,11 @@ const PostScreen = ({ navigation }) => {
   const [filterActive, setFilterActive] = useState(false); 
   const [selectedFilter, setSelectedFilter] = useState(null);
   const cameraRef = useRef(null);
-
+  const dispatch = useDispatch()
+  const goToPostConfirm = () => {
+    dispatch(setPhotoUri(capturedPhoto));
+    navigation.navigate("PostConfirm");
+  };
 
   const toggleCameraType = () => {
     setCameraType((prevType) =>
@@ -226,7 +232,7 @@ const PostScreen = ({ navigation }) => {
             </TouchableOpacity>
           </>
         ) : (
-          <TouchableOpacity onPress={() => navigation.navigate("PostConfirm", { photoUri: capturedPhoto })} style={styles.iconButton}>
+          <TouchableOpacity onPress={goToPostConfirm} style={styles.iconButton}>
             <SvgNext />
           </TouchableOpacity>
         )}

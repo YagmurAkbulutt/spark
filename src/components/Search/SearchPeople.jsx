@@ -115,7 +115,6 @@ const SearchPeople = ({ filteredUsers }) => {
               <View style={styles.userInfo}>
                 <Text style={styles.username}>{item.fullName}</Text>
                 <Text style={styles.userHandle}>{item.username}</Text>
-                <Text style={styles.userHandle}>{item.bio}</Text>
               </View>
             </TouchableOpacity>
             <View style={styles.closeIconContainer}>
@@ -132,22 +131,6 @@ const SearchPeople = ({ filteredUsers }) => {
         )}
       />
 
-      
-      {/* <Modal
-        animationType="none"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)} 
-        style={{height:"100%"}}
-        >
-         <View style={styles.modalContainer}>
-    <View style={[styles.modalContent,
-     { height:"100%"}]
-  }>
-      <SearchProfile user={selectedUser} closeModal={() => setModalVisible(false)} />
-    </View>
-  </View>
-      </Modal> */}
     </View>
   );
 };
@@ -182,6 +165,7 @@ const styles = StyleSheet.create({
   userInfo: {
     flex: 1,
     gap: 2,
+    justifyContent:"center"
   },
   username: {
     fontSize: 14,

@@ -1,14 +1,21 @@
 import {createSlice} from '@reduxjs/toolkit';
-import {likePost} from '../actions/postActions';
+import {fetchFeedPosts, likePost} from '../actions/postActions';
 
 const postsSlice = createSlice({
   name: 'posts',
   initialState: {
+    userPosts: {},
     posts: [],
     status: 'idle',
+    loading: false,
     error: null,
   },
   reducers: {
+   
+    clearPosts: (state) => {
+      state.posts = [];
+      state.error = null;
+    },
     setPosts: (state, action) => {
       console.log('[setPosts] Posts yüklendi:', action.payload);
       state.posts = action.payload;
@@ -16,6 +23,19 @@ const postsSlice = createSlice({
   },
   extraReducers: builder => {
     builder
+       // Postlar yüklenirken
+       .addCase(fetchFeedPosts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchFeedPosts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.userPosts[action.meta.arg] = action.payload.posts;
+      })
+      .addCase(fetchFeedPosts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
       .addCase(likePost.pending, state => {
         console.log('[likePost.pending] İstek gönderiliyor...');
         state.status = 'loading';
