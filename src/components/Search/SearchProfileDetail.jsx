@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import SvgPost from "../../assets/postProfile";
 import SvgPostActive from "../../assets/postprofileActive";
@@ -10,26 +10,40 @@ import ProfilePost from "../Profile/ProfilePost";
 import Collections from "../Home/Collections";
 import { useRoute } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchFeedPosts } from "../../redux/actions/postActions";
+import { fetchFeedPosts, fetchUserPosts } from "../../redux/actions/postActions";
+import { useEffect, useState } from "react";
 
 
 const SearchProfileDetail = () => {
   const [activeTab, setActiveTab] = useState("post");
   const dispatch = useDispatch()
   const route = useRoute();
-  const userId = useSelector((state) => state.user.userInfo?.id);
-  const { userPosts, loading, error } = useSelector((state) => state.posts);
-console.log("userpost", userPosts)
+
+  const userInfo = useSelector((state) => state.user);
+  const  userId  = userInfo?.userInfo.id
+
+   const userPosts = useSelector((state) => state.posts.userPosts);
+   const loading = useSelector((state) => state.posts.loading);
+   const error = useSelector((state) => state.posts.error);
+
+
+  console.log("useerid", userId)
+  console.log("userinfo", userInfo)
+console.log("userPosts",userPosts)
+
+
+
   useEffect(() => {
-    if (userId) {
-      dispatch(fetchFeedPosts(userId));
-    }
-  }, [userId]);
+     if (activeTab === "post") {
+       dispatch(fetchUserPosts(userId)); 
+     }
+   }, [activeTab, dispatch]);
+   
 
   const renderContent = () => {
     switch (activeTab) {
       case "post":
-        return <ProfilePost postIds={userPosts[userId] || []} />;
+        return <ProfilePost posts={userPosts} />;
       case "collections":
         return <Collections />;
       case "fav":
@@ -74,3 +88,11 @@ const styles = StyleSheet.create({
 });
 
 export default SearchProfileDetail;
+// const userId = useSelector((state) => state.user.userInfo?.id);
+//   const { userPosts, loading, error } = useSelector((state) => state.posts);
+// console.log("userpost", userPosts)
+//   useEffect(() => {
+//     if (userId) {
+//       dispatch(fetchFeedPosts(userId));
+//     }
+//   }, [userId]);

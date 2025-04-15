@@ -27,7 +27,7 @@ enableScreens(false);
 const WebViewModal = ({ visible, onClose, initialUrl, selectedItem,data }) => {
   if (!selectedItem) return null;
   
-  const [currentUrl, setCurrentUrl] = useState(initialUrl);
+  const [currentUrl, setCurrentUrl] = useState();
   const [webViewVisible, setWebViewVisible] = useState(false);
   const [selectedBookmark, setSelectedBookmark] = useState([]);
   const [selectedItemState, setSelectedItem] = useState(selectedItem);
@@ -41,7 +41,7 @@ const WebViewModal = ({ visible, onClose, initialUrl, selectedItem,data }) => {
 
   const goToWebsite = () => {
     setWebViewVisible(true);
-    setCurrentUrl(initialUrl);
+    setCurrentUrl(selectedItem?.url);
   };
 
   const handleBookmarkPress = (id) => {
@@ -97,7 +97,8 @@ const WebViewModal = ({ visible, onClose, initialUrl, selectedItem,data }) => {
   const flatListRef = useRef(null);
 
   
-  
+  console.log("Gidilecek URL:", selectedItem?.url);
+
 
   return (
     <>
@@ -105,7 +106,7 @@ const WebViewModal = ({ visible, onClose, initialUrl, selectedItem,data }) => {
     <View style={styles.overlay}>
       <FlatList
         data={data}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item._id} 
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
@@ -126,11 +127,8 @@ const WebViewModal = ({ visible, onClose, initialUrl, selectedItem,data }) => {
               <View style={styles.imageContainer}>
               
                   <HangerImageCarousel photos={item.photo}/>
+                  <Image source={require("../../assets/1.png")}/>
                 
-               
-               
-               
-               
                 <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                   <SvgClose style={styles.closeIcon} />
                 </TouchableOpacity>
@@ -138,10 +136,10 @@ const WebViewModal = ({ visible, onClose, initialUrl, selectedItem,data }) => {
 
               {/* Ürün Bilgileri */}
               <View style={styles.infoContainer}>
-                <Text style={styles.brand}>{item.store}</Text>
+                <Text style={styles.brand}>{selectedItem?.brand}</Text>
                 <View style={styles.priceContainer}>
-                  <Text style={styles.productName}>{item.product}</Text>
-                  <Text style={styles.price}>{item.price} TL</Text>
+                  <Text style={styles.productName}>{selectedItem?.type}</Text>
+                  <Text style={styles.price}>{selectedItem?.price} TL</Text>
                 </View>
 
                 {/* Butonlar */}
@@ -150,7 +148,7 @@ const WebViewModal = ({ visible, onClose, initialUrl, selectedItem,data }) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.websiteButton}
-                  onPress={() => goToWebsite(item.websiteUrl)}
+                  onPress={() => goToWebsite(selectedItem?.url)}
                 >
                   <Text style={styles.websiteText}>Websitesi</Text>
                 </TouchableOpacity>
@@ -186,7 +184,7 @@ const WebViewModal = ({ visible, onClose, initialUrl, selectedItem,data }) => {
   showsHorizontalScrollIndicator={false}
   contentContainerStyle={{ flexDirection: 'row',marginHorizontal:20, marginVertical:10, marginBottom:"10%" }}  
 >
-  {item.similar.map((similarItem) => (
+  {item?.similar?.map((similarItem) => (
     <View key={similarItem.product} >
       {renderSimilarItem({ item: similarItem })}
     </View>

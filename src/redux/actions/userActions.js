@@ -13,6 +13,7 @@ const getUserInfo = createAsyncThunk('user/getUserInfo', async (params, { reject
     
     const response = await getRequest(userInfoUrl, params);
     console.log("Kullanıcı bilgileri cevabı:", response.data);
+    console.log("kullanıcı id", response.data.data.user.id)
     
     if (response.data && response.data.data && response.data.data.user) {
       // API yanıtını kontrol edelim
@@ -55,6 +56,19 @@ const profileUpdate = createAsyncThunk(
     } catch (error) {
       console.error("Profil güncellenirken hata:", error);
       return rejectWithValue(error.message || "Profil güncellenemedi");
+    }
+  }
+);
+
+// kullanıcı profili görüntüleme 
+export const getUserProfile = createAsyncThunk(
+  'user/getUserProfile',
+  async (userId, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`users/${userId}`);
+      return response.data.data.user; 
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Profil yüklenemedi');
     }
   }
 );

@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { WebView } from "react-native-webview";
 import WebViewModal from './WebViewModal';
 
-const HangerModal = ({ hangerModal, setHangerModal }) => {
+const HangerModal = ({ hangerModal, setHangerModal, post }) => {
   const [selectedBookmark, setSelectedBookmark] = useState([]);
   const [webViewVisible, setWebViewVisible] = useState(false);
   const [webViewUrl, setWebViewUrl] = useState("");
@@ -77,36 +77,41 @@ const HangerModal = ({ hangerModal, setHangerModal }) => {
   
   
 
-  const renderItem = ({ item }) => {
-    const isBookmarked = selectedBookmark.includes(item.id);
-
-    return (
-      <TouchableOpacity
-        style={styles.card}
-        activeOpacity={0.7}
-        onPress={() => openWebView(item)}
-      >
-        <View style={styles.image}>
-          <Image source={item.photo[0]} style={styles.photo} />
-          <TouchableOpacity onPress={() => handleBookmarkPress(item.id)}>
-            {isBookmarked ? (
-              <SvgBookmarksFill style={styles.bookmark} />
-            ) : (
-              <SvgBookmarkS style={styles.bookmark} />
+    const renderItem = ({ item }) => {
+      const isBookmarked = selectedBookmark.includes(item.id);
+    
+      return (
+        <TouchableOpacity
+          style={styles.card}
+          activeOpacity={0.7}
+          onPress={() => openWebView(item)}
+        >
+          <View style={styles.image}>
+            {item.photo?.[0] && (
+              <Image source={{ uri: item.photo[0] }} style={styles.photo} />
             )}
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.textContainer}>
-          <Text style={styles.store}>{item.store}</Text>
-          <Text style={styles.product} numberOfLines={1} ellipsizeMode="tail">
-            {item.product}
-          </Text>
-          <Text style={styles.price}>{item.price.toFixed(2)} TL</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+            <TouchableOpacity onPress={() => handleBookmarkPress(item.id)}>
+              {isBookmarked ? (
+                <SvgBookmarksFill style={styles.bookmark} />
+              ) : (
+                <SvgBookmarkS style={styles.bookmark} />
+              )}
+            </TouchableOpacity>
+          </View>
+    
+          <View style={styles.textContainer}>
+            <Text style={styles.store}>{item.brand}</Text>
+            <Text style={styles.product} numberOfLines={1} ellipsizeMode="tail">
+              {item.type}
+            </Text>
+            <Text style={styles.price}>
+              {item.price?.toFixed(2) ?? "0.00"} TL
+            </Text>
+          </View>
+        </TouchableOpacity>
+      );
+    };
+    
 
   return (
     <Modal
@@ -167,13 +172,14 @@ const HangerModal = ({ hangerModal, setHangerModal }) => {
           </View>
 
           <FlatList
-            data={style}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id.toString()}
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-            style={styles.productList}
-          />
+  data={post.clothingLinks}
+  renderItem={renderItem}
+  keyExtractor={(item, index) => index.toString()}
+  horizontal={true}
+  showsHorizontalScrollIndicator={false}
+  style={styles.productList}
+/>
+
         {/* </View>
       </View> */}
 
@@ -183,7 +189,7 @@ const HangerModal = ({ hangerModal, setHangerModal }) => {
         onClose={() => setWebViewVisible(false)}
         initialUrl={webViewUrl}
         selectedItem={selectedItem}
-        data={style}
+        data={post.clothingLinks}
       />
     </View>
     </Animated.View>

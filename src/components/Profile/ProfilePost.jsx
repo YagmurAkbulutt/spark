@@ -1,79 +1,68 @@
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect } from 'react'
-import { post } from '../../utils/helpers'
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearPostDetail, fetchPostDetail } from '../../redux/actions/getPostDetailActions';
+import { fetchPostDetail } from '../../redux/actions/getPostDetailActions';
+import { fetchUserPosts } from '../../redux/actions/postActions';
 
-const ProfilePost = ({postIds}) => {
-  const navigation = useNavigation();
-  const dispatch = useDispatch();
-   // Tüm post detaylarını çek
-  //  useEffect(() => {
-  //   postIds.forEach(id => {
-  //     dispatch(fetchPostDetail(id));
-  //   });
-  // }, [postIds]);
-
-  // const { posts } = useSelector((state) => state.posts);
-  // const { post, loading, error } = useSelector((state) => state.getPostDetail);
-  // console.log('🔍 Component postId:', postId); // Props'tan gelen postId
-
-  // useEffect(() => {
-  //   console.log('🔄 useEffect postId:', postId); // useEffect içindeki postId
-  //   dispatch(fetchPostDetail(postId));
-  // }, [postId]);
-  // useEffect(() => {
-  //   console.log('🔄 useEffect tetiklendi - postId:', postId); // postId kontrolü
-
-  //   dispatch(fetchPostDetail(postId))
-  //     .then((action) => {
-  //       if (fetchPostDetail.fulfilled.match(action)) {
-  //         console.log('✅ Veri başarıyla çekildi:', action.payload);
-  //       } else if (fetchPostDetail.rejected.match(action)) {
-  //         console.error('❌ Hata:', action.payload || action.error);
-  //       }
-  //     });
-
-  //   return () => {
-  //     console.log('🧹 Component temizleniyor - state resetlenecek');
-  //     dispatch(clearPostDetail());
-  //   };
-  // }, [dispatch, postId]);
-
-  // // Redux state'ini konsola yazdır
-  // console.log('📊 Redux State:', { post, loading, error });
+const ProfilePost = ({posts}) => {
+  const navigation = useNavigation()
+  const dispatch = useDispatch()
+  const userInfo = useSelector((state) => state.user);
+  const  userId  = userInfo?.userInfo.id
+  // Log the posts in a readable format
+  console.log("Profile Posts Data:", JSON.stringify(posts, null, 2));
 
   const getFirstImage = (item) => {
     if (item.postPhoto) return item.postPhoto;
     if (item.images && item.images.length > 0) return item.images[0];
     return null;
   };
+console.log("profile post", posts)
 
-  const handleImagePress = (item) => {
-    navigation.navigate('UserPost', { selectedImage: item, allPosts: post });
-  };
+const handleImagePress = async (item) => {
+  try {
+    if (!userId) {
+      throw new Error("User ID is missing in the post data");
+    }
+
+    // Find the index of the clicked post in the existing posts array
+    const postIndex = posts.findIndex(post => post._id === item._id);
+    
+    if (postIndex === -1) {
+      throw new Error("Post not found in the current posts array");
+    }
+
+    navigation.navigate('UserPost', { 
+      postId: item._id,
+      selectedImage: item,
+      initialIndex: postIndex,
+      userPosts: posts // Pass the entire posts array if needed in UserPost screen
+    });
+  } catch (error) {
+    console.error('Failed to navigate to post details:', error.message);
+  }
+};
 
   return (
     <FlatList
-      data={post}
-      keyExtractor={(item) => item.id.toString()}
+      data={posts}
+      keyExtractor={(item) => item._id}
       numColumns={3}
       columnWrapperStyle={styles.columnWrapper}
-      renderItem={({ item }) => {
-        const imageSource = getFirstImage(item);
-        return (
-          imageSource && (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={styles.itemContainer}
-              onPress={() => handleImagePress(item)}
-            >
-              <Image source={{ uri: item.image }}  style={styles.image} />
-            </TouchableOpacity>
-          )
-        );
-      }}
+      renderItem={({ item }) => (
+        item.image ? (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={styles.itemContainer}
+            onPress={() => handleImagePress(item)}
+          >
+            <Image 
+              source={{ uri: item.image }}
+              style={styles.image} 
+            />
+          </TouchableOpacity>
+        ) : null
+      )}
     />
   );
 };

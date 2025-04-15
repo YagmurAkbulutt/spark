@@ -20,7 +20,7 @@ const FollowProfileScreen = ({ route, closeModal }) => {
   console.log("follow profile gelen user", user)
     const dispatch = useDispatch();
     const { isLogin } = useSelector(state => state.auth);
-    const { userInfo: loggedInUserInfo } = useSelector((state) => state.user); // Oturum açmış kullanıcı bilgisi
+    const { userInfo: loggedInUserInfo } = useSelector((state) => state.user); 
     const followers = useSelector(state => state.follow.followers);
     const following = useSelector(state => state.follow.following);
     const followStatus = useSelector(state => state.follow.status);
@@ -217,18 +217,7 @@ const FollowProfileScreen = ({ route, closeModal }) => {
         </View>
       );
     }
-   
 
-  // Konsola takip durumunu yazdır
-  // useEffect(() => {
-  //   console.log('Current follow status:', {
-  //     isFollowing: optimisticState.isFollowing,
-  //     followersCount: optimisticState.followersCount,
-  //     followingCount: optimisticState.followingCount,
-  //     profileId: userId,
-  //     currentUserId: currentUser?._id || currentUser?.id
-  //   });
-  // }, [optimisticState, following, userId, currentUserId]);
 
   if (!user) return null;
 
@@ -280,7 +269,6 @@ const styles = StyleSheet.create({
     justifyContent:"space-between",
     marginHorizontal:20,
     marginTop:60
-
   },
   username: {
     fontSize: 22,
@@ -292,108 +280,3 @@ const styles = StyleSheet.create({
     color: 'gray',
   },
 })
-
-
-
-// const SearchProfileScreen = ({ user, closeModal }) => {
-//   const dispatch = useDispatch();
-//   const { user: currentUser, isLogin } = useSelector(state => state.auth);
-//   const followers = useSelector(state => state.follow.followers);
-//   const following = useSelector(state => state.follow.following);
-//   const followStatus = useSelector(state => state.follow.status);
-//   const loading = useSelector(state => state.follow.loading || state.follow.status === "loading");
-// //   const currentUser = useSelector(state => state.auth.user); // Giriş yapan kullanıcı
-//   const [isLoading, setIsLoading] = useState(false);
-//   const userId = getSafeUserId(user);
-//   const [optimisticState, setOptimisticState] = useState({
-//     isFollowing: false,
-//     followersCount: 0,
-//     followingCount: 0
-//   });
-// // Auth state'inizi kontrol edin
-// console.log("Redux auth state:", useSelector(state => state.auth));
-//   // const userId = getSafeUserId(user);
-//   const randomUser = useMemo(() => {
-//     return users[Math.floor(Math.random() * users.length)];
-//   }, []); 
-
-//   // Kullanıcının kendi takip ettiği kullanıcıları yükle
-//   useEffect(() => {
-//     if (currentUser?._id || currentUser?.id) {
-//       const currentUserId = currentUser._id || currentUser.id;
-//       console.log("Mevcut kullanıcının takip listesini yüklüyorum:", currentUserId);
-//       dispatch(fetchFollowing(currentUserId));
-//     } else {
-//       console.log("Mevcut kullanıcı bilgisi bulunamadı");
-//     }
-//   }, [dispatch, currentUser]);
-
-//   // Profil sahibinin takipçilerini yükle
-//   useEffect(() => {
-//     if (userId) {
-//       console.log("Profil sahibinin takipçilerini yüklüyorum:", userId);
-//       // Profil sahibinin takipçilerini getir
-//       dispatch(fetchFollowers(userId));
-//     }
-//   }, [userId, dispatch]);
-
-//   // Başlangıç durumunu ve değişiklikleri yöneten useEffect
-//   useEffect(() => {
-//     if (!userId || !currentUser) return;
-
-//     const currentUserId = currentUser._id || currentUser.id;
-//     const followingStatus = isUserFollowing(following, userId);
-    
-//     console.log('Takip durumu kontrolü:', { 
-//       profileId: userId, 
-//       currentUserId,
-//       isFollowing: followingStatus
-//     });
-
-//     // Optimistik state'i güncelle
-//     setOptimisticState(prev => {
-//       // Eğer değişiklik varsa güncelle
-//       if (prev.isFollowing !== followingStatus || 
-//           prev.followersCount !== followers.length) {
-//         return {
-//           isFollowing: followingStatus,
-//           followersCount: followers.length,
-//           followingCount: following.length
-//         };
-//       }
-//       return prev;
-//     });
-
-//   }, [userId, following, followers, currentUser]);
-
-//   const handleFollowToggle = async () => {
-//     if (!userId || !currentUser || isLoading || loading) return;
-//     const currentUserId = currentUser._id || currentUser.id;
-    
-//     setIsLoading(true);
-//     const wasFollowing = optimisticState.isFollowing;
-
-//     try {
-//       if (wasFollowing) {
-//         const result = await dispatch(unfollowUser(userId)).unwrap();
-//         console.log("Takibi bırakma işlemi sonucu:", result);
-//       } else {
-//         const result = await dispatch(followUser(userId)).unwrap();
-//         console.log("Takip etme işlemi sonucu:", result);
-//       }
-      
-//       // İşlem başarılı olursa güncel takip durumunu yeniden kontrol et
-//       dispatch(fetchFollowing(currentUserId));
-//       dispatch(fetchFollowers(userId));
-      
-//     } catch (error) {
-//       console.error("İşlem başarısız:", error);
-//       // Kullanıcıya hata mesajı göster
-//       Alert.alert("Hata", error || "Takip işlemi başarısız oldu");
-      
-//       // Takip listesini yeniden yükle (hata durumunda bile doğru durumu görmek için)
-//       dispatch(fetchFollowing(currentUserId));
-//     } finally {
-//       setIsLoading(false);
-//     }
-//   };

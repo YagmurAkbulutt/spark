@@ -29,18 +29,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addLike, removeLike } from '../../redux/slices/likesSlice';
 import { savePost, unsavePost } from '../../redux/slices/savedPostSlice';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { fetchPostDetail } from '../../redux/actions/getPostDetailActions';
 
 const UserPost = ({  onClose }) => {
   const dispatch = useDispatch();
   const navigation = useNavigation()
   const route = useRoute();
   const { image, item } = route.params;
-
   const likesCount = useSelector((state) => state.likes.likesCount);
   const commentsCount = useSelector((state) => state.comments.commentsCount);
-  // const savedPosts = useSelector((state) => state.savedPosts.savedPosts);
-  // const shareCount = useSelector((state) => state.share.shareCount);
-
   const [scrollY] = useState(new Animated.Value(0));
   const [fadeAnim] = useState(new Animated.Value(1));
   const [translateY] = useState(new Animated.Value(0));
@@ -52,12 +49,35 @@ const UserPost = ({  onClose }) => {
   const [loaderVisible, setLoaderVisible] = useState(false);
   const likes = useSelector((state) => state.likes.likes);
   const likedBy = useSelector((state) => state.likes.likedBy);
-  const userId = 1; 
+  // const userId = 1; 
   const commentCount = useSelector((state) => state.comments.commentCount);
   const savedCounts = useSelector(state => state.savedPosts.savedCounts);
   // const isSaved = savedPosts.includes(item.id);
 // const saveCount = savedCounts[item.id] || 0;
+// const savedPosts = useSelector((state) => state.savedPosts.savedPosts);
+  // const shareCount = useSelector((state) => state.share.shareCount);
+const { postId } = route.params; // Assuming you're passing postId via navigation
+const { currentPost, loading, error } = useSelector(state => state.getPostDetail);
 
+
+useEffect(() => {
+  if (postId) {
+    dispatch(fetchPostDetail(postId));
+  }
+}, [postId, dispatch]);
+
+// Inside your UserPost component
+console.log("Route params:", route.params);
+console.log("Redux post detail state:", { currentPost, loading, error });
+
+// If you want to see the detailed structure of the currentPost
+useEffect(() => {
+  if (currentPost) {
+    console.log("Current post details:", JSON.stringify(currentPost, null, 2));
+    console.log("Post images:", currentPost.images || currentPost.postPhoto);
+    console.log("Post owner info:", currentPost.userId || currentPost.owner);
+  }
+}, [currentPost]);
 
 const handleClose = () => {
     if (onClose) {
@@ -149,178 +169,181 @@ const handleClose = () => {
   };
   const { sheight, swidth } = useWindowDimensions();
 
-  const { selectedImage, allPosts } = route.params; // selectedImage ve allPosts alınıyor
+  // const { selectedImage, allPosts } = route.params; // selectedImage ve allPosts alınıyor
   const flatListRef = useRef(null);
   const screenHeight = Dimensions.get('window').height;
 
-  // Görsellerin sırasını ayarlamak için
-  const selectedIndex = allPosts.findIndex((img) => img.id === selectedImage.id);
+  // // Görsellerin sırasını ayarlamak için
+  // const selectedIndex = allPosts.findIndex((img) => img.id === selectedImage.id);
+  const { selectedImage, allPosts = [], initialIndex } = route.params;
+  const [currentIndex, setCurrentIndex] = useState(initialIndex || 0);
+  
+  const safeSelectedIndex = allPosts.findIndex(
+    post => post?.id === selectedImage?.id
+  ) || 0;
 
   useEffect(() => {
     // Seçilen görselin bulunduğu indekse scroll etme
-    if (selectedIndex !== -1 && flatListRef.current) {
+    if (safeSelectedIndex !== -1 && flatListRef.current) {
       setTimeout(() => {
-        flatListRef.current.scrollToIndex({ index: selectedIndex, animated: false });
+        flatListRef.current.scrollToIndex({ index: safeSelectedIndex, animated: false });
       }, 100);
     }
-  }, [selectedIndex]);
+  }, [safeSelectedIndex]);
   
   return (
     <FlatList
-    data={allPosts}
-    keyExtractor={(item) => item.id.toString()}
-    ref={flatListRef}
-    pagingEnabled
-    horizontal={false}
-    showsVerticalScrollIndicator={false}
-    getItemLayout={(data, index) => ({
-      length: screenHeight,
-      offset: screenHeight * index,
-      index,
-    })}
-    renderItem={({ item }) => (
-      <View style={{ height: screenHeight }}>
-        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-          <View style={{ flex: 1 }}>
-            <Animated.ScrollView
-              contentContainerStyle={styles.scrollContainer}
-              showsVerticalScrollIndicator={false}
-              onScroll={onScroll} // Scroll işlemi
-              scrollEventThrottle={16}
+    data={currentPost ? [currentPost] : []}
+  keyExtractor={(item) => item._id} 
+  ref={flatListRef}
+  pagingEnabled
+  horizontal={false}
+  showsVerticalScrollIndicator={false}
+  getItemLayout={(data, index) => ({
+    length: screenHeight,
+    offset: screenHeight * index,
+    index,
+  })}
+  renderItem={({ item }) => (
+    <View style={{ height: screenHeight }}>
+      <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+        <View style={{ flex: 1 }}>
+          <Animated.ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            showsVerticalScrollIndicator={false}
+            onScroll={onScroll}
+            scrollEventThrottle={16}
+          >
+            <Animated.View
+              style={[
+                styles.container,
+                {
+                  opacity: fadeAnim,
+                  transform: [{ translateY }],
+                },
+              ]}
             >
-              <Animated.View
-                style={[
-                  styles.container,
-                  {
-                    opacity: fadeAnim,
-                    transform: [{ translateY }],
-                  },
-                ]}
-              >
-                {/* Üst Gölge */}
-                <LinearGradient
-                  colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0)']}
-                  style={styles.topGradient}
-                />
+              {/* Üst Gölge */}
+              <LinearGradient
+                colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0)']}
+                style={styles.topGradient}
+              />
 
-                {/* Fotoğraf */}
-                <Image source={item.postPhoto} style={styles.image} />
+              {/* Fotoğraf */}
+              <Image source={{ uri: item.image }} style={styles.image} />
 
-                {/* Alt Gölge */}
-                <LinearGradient
-                  colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.7)']}
-                  style={styles.bottomGradient}
-                />
-              </Animated.View>
+              {/* Alt Gölge */}
+              <LinearGradient
+                colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.7)']}
+                style={styles.bottomGradient}
+              />
+            </Animated.View>
 
-              <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
-                <SvgCloseLight />
-              </TouchableOpacity>
+            <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
+              <SvgCloseLight />
+            </TouchableOpacity>
 
-              {/* Action Buttons */}
-              <View style={styles.action}>
-                {hangerModal ? null : (
-                  <>
-                    {/* Beğeni Butonu */}
-                    <TouchableOpacity style={styles.actionBtn} onPress={handleLike}>
-                      <SvgHeart />
-                      <Text style={styles.actionText}>{likes}</Text>
-                    </TouchableOpacity>
-
-                    {/* Yorum Butonu */}
-                    <View>
-                      <TouchableOpacity style={styles.actionBtn} onPress={handleComment}>
-                        <SvgComments />
-                        <Text style={styles.actionText}>{commentCount}</Text>
-                      </TouchableOpacity>
-                      <CommentModal
-                        commentModal={commentModal}
-                        setCommentModal={setCommentModal}
-                        onSubmitComment={handleSubmitComment}
-                      />
-                    </View>
-
-                    {/* Kaydet Butonu */}
-                    <View>
-                      <TouchableOpacity style={styles.actionBtn} onPress={handleSave}>
-                        <SvgBookmark />
-                        <Text style={styles.actionText}>
-                          {/* {saveCount} */}
-                        </Text>
-                      </TouchableOpacity>
-                      <CollectionsModal
-                        collectionModal={collectionModal}
-                        setCollectionModal={setCollectionModal}
-                      />
-                    </View>
-
-                    {/* Paylaş Butonu */}
-                    <View>
-                      <TouchableOpacity style={styles.actionBtn} onPress={handleShare}>
-                        <SvgShare />
-                        <Text style={styles.actionText}>
-                          {/* {shareCount} */}
-                        </Text>
-                      </TouchableOpacity>
-                      <ShareModal
-                        modalVisible={modalVisible}
-                        setModalVisible={setModalVisible}
-                      />
-                    </View>
-                  </>
-                )}
-                {!hangerModal && (
-                  <View>
-                    <TouchableOpacity style={styles.actionBtn} onPress={toggleHangerModal}>
-                      <SvgHanger />
-                    </TouchableOpacity>
-                  </View>
-                )}
-
-                <HangerModal
-                  hangerModal={hangerModal}
-                  setHangerModal={toggleHangerModal}
-                />
-              </View>
-
-              {/* Profil */}
+            {/* Action Buttons */}
+            <View style={styles.action}>
               {hangerModal ? null : (
-                <View style={styles.profile}>
-                  <View style={styles.profileContainer}>
-                    <View style={styles.imageWrapper}>
-                      <Image
-                        source={require('../../assets/profilePhoto.png')}
-                        style={styles.profileImage}
-                      />
-                    </View>
-                    <TouchableOpacity style={styles.plusButton}>
-                      <SvgPlusPinkB />
+                <>
+                  {/* Beğeni Butonu */}
+                  <TouchableOpacity style={styles.actionBtn} onPress={handleLike}>
+                    <SvgHeart />
+                    <Text style={styles.actionText}>{item.likeCount}</Text> {/* likeCount kullanıyoruz */}
+                  </TouchableOpacity>
+
+                  {/* Yorum Butonu */}
+                  <View>
+                    <TouchableOpacity style={styles.actionBtn} onPress={handleComment}>
+                      <SvgComments />
+                      <Text style={styles.actionText}>{item.commentCount}</Text> {/* commentCount kullanıyoruz */}
                     </TouchableOpacity>
+                    <CommentModal
+                      commentModal={commentModal}
+                      setCommentModal={setCommentModal}
+                      onSubmitComment={handleSubmitComment}
+                    />
                   </View>
 
-                  <View style={styles.title}>
-                    <Text style={styles.username}>
-                      @<Text style={styles.boldUsername}>{item?.username}</Text>
-                    </Text>
-                    <Text style={styles.caption}>
-                      {item?.description}
-                      {Array.isArray(item?.tags) && item?.tags.length > 0
-                        ? item?.tags.map((tag, index) => (
-                            <Text key={index} style={styles.hashtag}>
-                              {tag}{' '}
-                            </Text>
-                          ))
-                        : null}
-                    </Text>
+                  {/* Kaydet Butonu */}
+                  <View>
+                    <TouchableOpacity style={styles.actionBtn} onPress={handleSave}>
+                      <SvgBookmark />
+                    </TouchableOpacity>
+                    <CollectionsModal
+                      collectionModal={collectionModal}
+                      setCollectionModal={setCollectionModal}
+                    />
                   </View>
+
+                  {/* Paylaş Butonu */}
+                  <View>
+                    <TouchableOpacity style={styles.actionBtn} onPress={handleShare}>
+                      <SvgShare />
+                    </TouchableOpacity>
+                    <ShareModal
+                      modalVisible={modalVisible}
+                      setModalVisible={setModalVisible}
+                    />
+                  </View>
+                </>
+              )}
+              {!hangerModal && (
+                <View>
+                  <TouchableOpacity style={styles.actionBtn} onPress={toggleHangerModal}>
+                    <SvgHanger />
+                  </TouchableOpacity>
                 </View>
               )}
-            </Animated.ScrollView>
-          </View>
-        </TouchableWithoutFeedback>
-      </View>
-    )}
-  />
+
+              <HangerModal
+                hangerModal={hangerModal}
+                setHangerModal={toggleHangerModal}
+                post={item}
+              />
+            </View>
+
+            {/* Profil */}
+            {hangerModal ? null : (
+              <View style={styles.profile}>
+                <View style={styles.profileContainer}>
+                  <View style={styles.imageWrapper}>
+                    {/* Kullanıcı profil fotoğrafı - user objesinden çekiyoruz */}
+                    <Image
+                      source={{ uri: selectedImage.user.profilePicture}}
+                      style={styles.profileImage}
+                    />
+                  </View>
+                  <TouchableOpacity style={styles.plusButton}>
+                    <SvgPlusPinkB />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.title}>
+                  <Text style={styles.username}>
+                    @<Text style={styles.boldUsername}>{selectedImage.user.username}</Text>
+                  </Text>
+                  <Text style={styles.caption}>
+                    {item.description}
+                    {/* Tags boş geliyor ama yine de kontrol ediyoruz */}
+                    {item.tags && item.tags.length > 0
+                      ? item.tags.map((tag, index) => (
+                          <Text key={index} style={styles.hashtag}>
+                            #{tag}{' '}
+                          </Text>
+                        ))
+                      : null}
+                  </Text>
+                </View>
+              </View>
+            )}
+          </Animated.ScrollView>
+        </View>
+      </TouchableWithoutFeedback>
+    </View>
+  )}
+/>
   );
 };
 

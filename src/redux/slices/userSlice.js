@@ -1,8 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getUserInfo, profileUpdate } from '../actions/userActions';
+import { getUserInfo, getUserProfile, profileUpdate } from '../actions/userActions';
 
 const initialState = {
 userInfo:null,
+currentProfile: null,
 isLoading:false,
 error:null
 };
@@ -39,6 +40,19 @@ const userSlice = createSlice({
   .addCase(profileUpdate.rejected, (state, action) => {
     state.error = action.error.message;
     state.isLoading = false;
+  })
+  // diğer kullanıcı profilleri
+  .addCase(getUserProfile.pending, (state) => {
+    state.status = 'loading';
+    state.error = null;
+  })
+  .addCase(getUserProfile.fulfilled, (state, action) => {
+    state.status = 'succeeded';
+    state.currentProfile = action.payload; 
+  })
+  .addCase(getUserProfile.rejected, (state, action) => {
+    state.status = 'failed';
+    state.error = action.payload;
   });
   }
 });

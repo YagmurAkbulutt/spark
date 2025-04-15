@@ -1,11 +1,12 @@
 import {createSlice} from '@reduxjs/toolkit';
-import {fetchFeedPosts, likePost} from '../actions/postActions';
+import {fetchFeedPosts, fetchUserPosts, likePost} from '../actions/postActions';
 
 const postsSlice = createSlice({
   name: 'posts',
   initialState: {
     userPosts: {},
-    posts: [],
+    feedPosts: [],
+    posts:[],
     status: 'idle',
     loading: false,
     error: null,
@@ -30,11 +31,27 @@ const postsSlice = createSlice({
       })
       .addCase(fetchFeedPosts.fulfilled, (state, action) => {
         state.loading = false;
-        state.userPosts[action.meta.arg] = action.payload.posts;
+        state.feedPosts = action.payload;
       })
       .addCase(fetchFeedPosts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      // Kullanıcı Postları için
+      .addCase(fetchUserPosts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.status = 'loading';
+      })
+      .addCase(fetchUserPosts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.status = 'succeeded';
+        state.userPosts = action.payload;
+      })
+      .addCase(fetchUserPosts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.status = 'failed';
       })
       .addCase(likePost.pending, state => {
         console.log('[likePost.pending] İstek gönderiliyor...');
